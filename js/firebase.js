@@ -1,6 +1,6 @@
 ﻿/* ============================================================
    Dülük Hub — firebase.js
-   Firebase kurulumu (config, auth, firestore, storage) ve
+   Firebase kurulumu (config, auth, firestore) ve
    veri servisi. Firestore erişilemiyorsa otomatik "demo moda"
    geçilir: demo içerik + localStorage yedekleri kullanılır.
    ============================================================ */
@@ -26,7 +26,6 @@ import {
     serverTimestamp,
     increment
 } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-storage.js";
 
 import { DEMO } from "./data.js";
 
@@ -51,7 +50,6 @@ try {
 
 export const auth = getAuth(app);
 export const db = getFirestore(app);
-export const storage = getStorage(app);
 
 /* ---------- Demo mod tespiti ---------- */
 
@@ -306,70 +304,6 @@ export function demoSetSession(session) {
     } catch (err) {
         console.error("Oturum kaydedilemedi:", err);
     }
-}
-
-/* ---------- Storage (fotoğraf yükleme) ---------- */
-
-export async function uploadPhotoFile(file, onProgress) {
-    if (await isLive()) {
-        const thumbBlob = await compressImage(file, 640, 0.75);
-        const fullBlob = await compressImage(file, 1600, 0.82);
-        const base = "photos/" + Date.now();
-        const thumbRef = ref(storage, base + "/thumb.jpg");
-        const fullRef = ref(storage, base + "/full.jpg");
-        if (onProgress) onProgress(25);
-        await uploadBytes(thumbRef, thumbBlob, { contentType: "image/jpeg" });
-        if (onProgress) onProgress(60);
-        await uploadBytes(fullRef, fullBlob, { contentType: "image/jpeg" });
-        if (onProgress) onProgress(90);
-        const thumbnailUrl = await getDownloadURL(thumbRef);
-        const imageUrl = await getDownloadURL(fullRef);
-        if (onProgress) onProgress(100);
-        return { thumbnailUrl, imageUrl };
-    }
-    throw new Error("demo");
-}
-
-export async function deletePhoto(name, thumbUrl, fullUrl) {
-    if (await isLive()) {
-        if (thumbUrl) await deleteObject(ref(storage, thumbUrl)).catch(() => {});
-        if (fullUrl) await deleteObject(ref(storage, fullUrl)).catch(() => {});
-        await deleteItem("photos", name);
-        return true;
-    }
-    return deleteItem("photos", name);
-}
-
-/* ---------- Görsel sıkıştırma (client-side) ---------- */
-
-function compressImage(file, maxDim, quality) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-            const img = new Image();
-            img.onload = () => {
-                const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
-                if (scale === 1 && file.size < 300 * 1024) {
-                    resolve(file);
-                    return;
-                }
-                const canvas = document.createElement("canvas");
-                canvas.width = Math.round(img.width * scale);
-                canvas.height = Math.round(img.height * scale);
-                const ctx = canvas.getContext("2d");
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                canvas.toBlob(
-                    (blob) => (blob ? resolve(blob) : reject(new Error("Sıkıştırma başarısız"))),
-                    "image/jpeg",
-                    quality
-                );
-            };
-            img.onerror = reject;
-            img.src = reader.result;
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-    });
 }
 
 /* ---------- Firestore dönüşümleri ---------- */

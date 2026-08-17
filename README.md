@@ -1,4 +1,4 @@
-# Dülük Hub
+﻿# Dülük Hub
 
 Dülük Köyü için hazırlanmış **mobil-first** topluluk web sitesi — telefonda bir uygulama gibi hissettirir. Tek sayfa uygulama (SPA) mantığında çalışır: sayfa yenilenmez, ekranlar aynı görünüm alanı içinde değişir.
 
@@ -11,10 +11,10 @@ Dülük Köyü için hazırlanmış **mobil-first** topluluk web sitesi — tele
 - Ekranlar: Haberler (filtre + detay), Etkinlikler, Çekilişler (katılım + ilerleme), Köy Galerisi (kare ızgara + lightbox), Köy Hikayeleri (beğeni), Tarihi Eserler, Ayarlar, Profilim, Yönetim
 - Yönetim paneli: çekmecedeki **"Yönetim"** satırı → yetki kodu (**355334**) girişi; yalnızca `role: "admin"` sahibi hesaplar içeri girer
 - SPA hash router, geri/ileri tuşu desteği, karanlık tema (sistem algılama + manuel)
-- Firebase: Authentication (e-posta/şifre; telefon girişi de e-posta eşlemesiyle çalışır), Firestore, Storage
+- Firebase: Authentication (e-posta/şifre; telefon girişi de e-posta eşlemesiyle çalışır) ve Firestore
 - Admin yönetimi: haber, fotoğraf, etkinlik, çekiliş, hikâye, tarihi eser, duyuru ekleme/silme
 - Demo mod: Firestore erişilemezse site bozulmaz; örnek içerik + yerel (localStorage) kayıtlarla çalışır
-- Görseller lazy-load; yüklenen fotoğraflar istemci tarafında sıkıştırılır (thumbnail + full)
+- Görseller lazy-load; galeri görselleri görsel bağlantısıyla eklenir
 - Erişilebilirlik: semantik HTML, klavye (Tab/Enter/Esc), `aria-current`, focus yönetimi, `prefers-reduced-motion`
 
 ## Klasör yapısı
@@ -44,7 +44,6 @@ dulukhub/
 │   ├── logo.svg
 │   └── favicon.svg
 ├── firestore.rules
-├── storage.rules
 └── README.md
 ```
 
@@ -58,14 +57,10 @@ dulukhub/
    ```bash
    firebase deploy --only firestore:rules
    ```
-4. **Storage** başlatın ve `storage.rules` dosyasını yayınlayın:
-   ```bash
-   firebase deploy --only storage:rules
-   ```
-5. **İlk admin'i atayın:** Kayıt formuyla kaydolun, sonra Firestore'da `users/{uid}`
+4. **İlk admin'i atayın:** Kayıt formuyla kaydolun, sonra Firestore'da `users/{uid}`
    belgesinin içine `role: "admin"` alanını ekleyin. Bu yapılmadan "Yönetim" kodu
    (355334) doğru girilse bile panel açılmaz.
-6. Firebase yapılandırması `js/firebase.js` içinde hazırdır.
+5. Firebase yapılandırması `js/firebase.js` içinde hazırdır.
 
 ### Güvenlik notları
 

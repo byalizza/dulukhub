@@ -7,10 +7,10 @@
 import { $, esc } from "./app.js";
 
 const SOCIAL_LINKS = {
-    instagram: "https://instagram.com/dulukhub",
-    facebook: "https://facebook.com/dulukhub",
-    tiktok: "https://tiktok.com/@dulukhub",
-    telegram: "https://t.me/dulukhub"
+    instagram: "https://www.instagram.com/dulukhub?igsh=bTF1NXhwbzM4dHRq",
+    facebook: "https://www.facebook.com/share/1VJoqs7Dg8/",
+    tiktok: "https://www.tiktok.com/@komedileselim?_r=1&_t=ZS-98xuHBHmmOK",
+    telegram: "https://t.me/duluksosyal"
 };
 
 const ICONS = {
@@ -23,8 +23,8 @@ const ICONS = {
 const SOCIALS = [
     { id: "instagram", name: "Instagram", handle: "@dulukhub", tile: "linear-gradient(135deg, #F58529 0%, #DD2A7B 55%, #8134AF 100%)", shadow: "rgba(221, 42, 123, 0.4)" },
     { id: "facebook", name: "Facebook", handle: "Dülük Hub", tile: "#1877F2", shadow: "rgba(24, 119, 242, 0.4)" },
-    { id: "tiktok", name: "TikTok", handle: "@dulukhub", tile: "linear-gradient(135deg, #FE2C55 0%, #25F4EE 160%)", shadow: "rgba(254, 44, 85, 0.4)" },
-    { id: "telegram", name: "Telegram", handle: "@dulukhub", tile: "#229ED9", shadow: "rgba(34, 158, 217, 0.4)" }
+    { id: "tiktok", name: "TikTok", handle: "@komedileselim", tile: "linear-gradient(135deg, #FE2C55 0%, #25F4EE 160%)", shadow: "rgba(254, 44, 85, 0.4)" },
+    { id: "telegram", name: "Telegram", handle: "@duluksosyal", tile: "#229ED9", shadow: "rgba(34, 158, 217, 0.4)" }
 ];
 
 export async function renderSocial() {

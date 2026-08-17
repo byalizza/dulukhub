@@ -42,8 +42,8 @@ dulukhub/
 │   ├── heritage.js          Tarihi eserler
 │   └── settings.js          Ayarlar
 ├── assets/
-│   ├── logo.svg
-│   └── favicon.svg
+│   ├── logo.png             Logolar (orijinal logo)
+│   └── favicon.png          Favicon (256px kopya)
 ├── firestore.rules
 └── README.md
 ```

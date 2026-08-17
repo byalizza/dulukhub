@@ -40,7 +40,6 @@ import {
 } from "./firebase.js";
 
 const ADMIN_CODE = "355334";
-const ADMIN_SESSION_KEY = "dulukhub-admin-session";
 const DEMO_USERS_KEY = "dulukhub-demo-users";
 
 let currentUser = null;
@@ -84,12 +83,7 @@ export function getCurrentProfile() {
 }
 
 export function isAdminSession() {
-    return localStorage.getItem(ADMIN_SESSION_KEY) === "1" && !!currentProfile && currentProfile.role === "admin";
-}
-
-function setAdminSession(on) {
-    if (on) localStorage.setItem(ADMIN_SESSION_KEY, "1");
-    else localStorage.removeItem(ADMIN_SESSION_KEY);
+    return !!currentProfile && currentProfile.role === "admin";
 }
 
 /* ---------- Oturum başlangıcı ---------- */
@@ -158,7 +152,6 @@ function startSession() {
 function endSession() {
     currentUser = null;
     currentProfile = null;
-    setAdminSession(false);
     if (authModeValue === "live" && auth.currentUser) {
         signOut(auth).catch(() => {});
     }
@@ -393,7 +386,6 @@ export function openAdminCodeModal() {
             errorBox.hidden = false;
             return;
         }
-        setAdminSession(true);
         toast("Yönetim paneli açıldı.");
         closeModal();
         navigateTo("admin");

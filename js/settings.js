@@ -4,7 +4,8 @@
    ============================================================ */
 
 import { $, esc, toast } from "./app.js";
-import { openAdminCodeModal } from "./auth.js";
+import { navigateTo } from "./navigation.js";
+import { openAdminCodeModal, isAdminSession } from "./auth.js";
 
 const NOTIF_KEYS = {
     email: "dulukhub-notif-email",
@@ -45,7 +46,7 @@ export async function renderSettings() {
         '<div class="card setting-row" style="cursor:pointer" id="settingsAdmin">' +
         '<span class="nav-icon icon-admin">' +
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>' +
-        "<div><strong>Yönetim</strong><small>Yetki kodu ile paneli aç</small></div>" +
+        "<div><strong>Yönetim</strong><small>" + (isAdminSession() ? "Paneli aç" : "Yetki kodu ile paneli aç") + "</small></div>" +
         '<button type="button" class="btn btn-sm btn-ghost">Aç</button></div>' +
 
         '<div class="card" style="padding:16px;font-size:12.5px;color:var(--color-muted)">' +
@@ -68,5 +69,8 @@ export async function renderSettings() {
         });
     }
 
-    $("#settingsAdmin", el).addEventListener("click", openAdminCodeModal);
+    $("#settingsAdmin", el).addEventListener("click", () => {
+        if (isAdminSession()) navigateTo("admin");
+        else openAdminCodeModal();
+    });
 }

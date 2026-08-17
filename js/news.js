@@ -11,10 +11,10 @@ let cachedPosts = [];
 let currentFilter = "Tümü";
 
 const CATEGORY_LABELS = {
-    "Güncel": "Güncel",
-    "Etkinlik": "Etkinlik",
-    "Köy": "Köy"
+    "Güncel": "Güncel"
 };
+
+const RECENT_MS = 7 * 24 * 60 * 60 * 1000;
 
 export async function renderNewsList() {
     const el = $("#newsContent");
@@ -44,11 +44,7 @@ export async function renderNewsList() {
 }
 
 function renderList(el) {
-    const categories = ["Tümü", "Güncel", "Etkinlik", "Köy"].filter((c) =>
-        c === "Tümü" || cachedPosts.some((p) => p.category === c)
-    );
-
-    const chips = categories.map((c) =>
+    const chips = ["Tümü", "Güncel"].map((c) =>
         '<button type="button" class="chip' + (c === currentFilter ? " active" : "") + '" data-filter="' + esc(c) + '">' + esc(CATEGORY_LABELS[c] || c) + "</button>"
     ).join("");
 
@@ -74,9 +70,9 @@ function renderList(el) {
 }
 
 function renderItems(panel) {
-    const filtered = currentFilter === "Tümü"
-        ? cachedPosts
-        : cachedPosts.filter((p) => p.category === currentFilter);
+    const filtered = currentFilter === "Güncel"
+        ? cachedPosts.filter((p) => new Date(p.date).getTime() >= Date.now() - RECENT_MS)
+        : cachedPosts;
 
     if (!filtered.length) {
         panel.innerHTML =

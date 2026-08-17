@@ -87,6 +87,7 @@ function giveawayCard(g) {
         '<div class="giveaway-countdown" data-count="' + encodeURIComponent(g.endDate) + '" role="timer" aria-live="polite">…</div>' +
         '<div class="progress-track"><div class="progress-fill" style="width:' + pct + '%"></div></div>' +
         '<p class="giveaway-stats"><span>' + esc(g.participants) + " kişi katıldı</span><span>" + esc(pct) + "%</span></p>" +
+        (g.startDate ? '<p class="form-hint" style="text-align:center">Başlangıç: ' + fmtDateTime(g.startDate) + "</p>" : "") +
         (joined
             ? '<button type="button" class="btn btn-block btn-ghost" disabled>Katılımın alındı — bol şans!</button>'
             : '<button type="button" class="btn btn-block btn-accent" data-giveaway-id="' + encodeURIComponent(g.id) + '">' +

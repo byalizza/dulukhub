@@ -117,7 +117,7 @@ function sortByDateAsc(list) {
 
 export async function listPosts() {
     if (await isLive()) {
-        const snap = await getDocs(query(collection(db, "posts"), orderBy("createdAt", "desc"), limit(40)));
+        const snap = await getDocs(query(collection(db, "posts"), orderBy("date", "desc"), limit(40)));
         return snap.docs.map(postToItem).filter((p) => p.published !== false);
     }
     return [...getDemoList("posts")].sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -367,7 +367,7 @@ function postToItem(doc) {
         title: d.title || "",
         description: d.description || "",
         category: d.category || "Güncel",
-        date: toISO(d.createdAt) || new Date().toISOString(),
+        date: toISO(d.date) || toISO(d.createdAt) || new Date().toISOString(),
         cover: d.imageUrl || "",
         content: d.content || []
     };
@@ -392,6 +392,7 @@ function eventToItem(doc) {
         id: doc.id,
         title: d.title || "",
         date: d.date || "",
+        endDate: d.endDate || "",
         time: d.time || "",
         location: d.location || "",
         description: d.description || ""
@@ -416,6 +417,7 @@ function giveawayToItem(doc) {
         title: d.title || "",
         description: d.description || "",
         prize: d.prize || "",
+        startDate: toISO(d.startDate) || "",
         endDate: toISO(d.endDate) || d.endDate || new Date().toISOString(),
         participants: Number(d.participants) || 0,
         target: Number(d.target) || 1

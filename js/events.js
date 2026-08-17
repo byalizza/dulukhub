@@ -143,6 +143,7 @@ export function openEventModal(id) {
         content:
             (ev.imageUrl ? '<img class="event-img" src="' + esc(ev.imageUrl) + '" alt="' + esc(ev.title) + '">' : "") +
             '<div class="form-group"><label>Tarih</label><p style="margin:0;font-weight:600">' + esc(fmtDate(ev.date)) + "</p></div>" +
+            (ev.endDate ? '<div class="form-group"><label>Son tarih</label><p style="margin:0;font-weight:600">' + esc(fmtDate(ev.endDate)) + "</p></div>" : "") +
             (ev.time ? '<div class="form-group"><label>Saat</label><p style="margin:0;font-weight:600">' + esc(ev.time) + "</p></div>" : "") +
             (ev.location ? '<div class="form-group"><label>Konum</label><p style="margin:0;font-weight:600">' + esc(ev.location) + "</p></div>" : "") +
             '<div class="form-group"><label>Açıklama</label><p style="margin:0;line-height:1.7">' + esc(ev.description || "Açıklama eklenmedi.") + "</p></div>" +

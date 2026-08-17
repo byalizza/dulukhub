@@ -12,7 +12,7 @@ export const DEMO = {
             id: "demo-post-1",
             title: "Köy Meydanındaki Çınar Ağacı Yenilendi",
             description: "Köy meydanımızdaki tarihi çınar ağacının bakımı tamamlandı.",
-            category: "Köy",
+            category: "Güncel",
             date: "2026-08-14T10:00:00.000Z",
             cover: img("cinar") + "/1200/675",
             content: [
@@ -25,7 +25,7 @@ export const DEMO = {
             id: "demo-post-2",
             title: "Mahalle Arası Futbol Turnuvası Başlıyor",
             description: "Yaz sonu futbol turnuvasına tüm mahalleler davetli. Kayıtlar devam ediyor.",
-            category: "Etkinlik",
+            category: "Güncel",
             date: "2026-08-12T09:00:00.000Z",
             cover: img("futbol") + "/1200/675",
             content: [
@@ -51,7 +51,7 @@ export const DEMO = {
             id: "demo-post-4",
             title: "Köy Kütüphanesi Kitap Bağışı Kampanyası",
             description: "Köy kütüphanemiz için kitap bağışı kampanyası başlattık.",
-            category: "Köy",
+            category: "Güncel",
             date: "2026-08-08T14:00:00.000Z",
             cover: img("kitap") + "/1200/675",
             content: [
@@ -77,7 +77,7 @@ export const DEMO = {
             id: "demo-post-6",
             title: "Bağ Bozumu Şenliği Bu Yıl 12 Eylül'de",
             description: "Geleneksel bağ bozumu şenliğimiz için hazırlıklar başladı.",
-            category: "Etkinlik",
+            category: "Güncel",
             date: "2026-08-04T16:00:00.000Z",
             cover: img("bag") + "/1200/675",
             content: [

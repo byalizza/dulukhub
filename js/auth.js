@@ -584,7 +584,7 @@ function adminForm(kind, title, fields) {
 function postFields() {
     return ['<div class="form-group"><label for="apTitle">Başlık *</label><input id="apTitle" class="form-control" maxlength="150" required></div>',
         '<div class="form-group"><label for="apDesc">Kısa açıklama</label><textarea id="apDesc" class="form-control" maxlength="500"></textarea></div>',
-        '<div class="form-group"><label for="apCat">Kategori</label><select id="apCat" class="form-control"><option>Güncel</option><option>Etkinlik</option><option>Köy</option></select></div>',
+        '<div class="form-group"><label for="apDate">Haber tarihi (boş bırakılırsa şimdi)</label><input id="apDate" class="form-control" type="datetime-local"></div>',
         imgField("ap", "Görsel"),
         '<div class="form-group"><label for="apContent">İçerik (her satır bir paragraf)</label><textarea id="apContent" class="form-control" maxlength="8000"></textarea></div>'
     ].join("");
@@ -600,6 +600,7 @@ function photoFields() {
 function eventFields() {
     return ['<div class="form-group"><label for="aeTitle">Etkinlik adı *</label><input id="aeTitle" class="form-control" maxlength="150" required></div>',
         '<div class="form-group"><label for="aeDate">Tarih *</label><input id="aeDate" class="form-control" type="date" required></div>',
+        '<div class="form-group"><label for="aeEnd">Son tarih (isteğe bağlı)</label><input id="aeEnd" class="form-control" type="date"></div>',
         '<div class="form-group"><label for="aeTime">Saat</label><input id="aeTime" class="form-control" type="time"></div>',
         '<div class="form-group"><label for="aeLoc">Konum</label><input id="aeLoc" class="form-control" maxlength="120"></div>',
         imgField("aeImg", "Görsel"),
@@ -612,6 +613,7 @@ function giveawayFields() {
         '<div class="form-group"><label for="agPrize">Ödül *</label><input id="agPrize" class="form-control" maxlength="120" required></div>',
         imgField("agImg", "Görsel"),
         '<div class="form-group"><label for="agDesc">Açıklama</label><textarea id="agDesc" class="form-control" maxlength="600"></textarea></div>',
+        '<div class="form-group"><label for="agStart">Başlangıç tarihi (isteğe bağlı)</label><input id="agStart" class="form-control" type="datetime-local"></div>',
         '<div class="form-group"><label for="agEnd">Bitiş tarihi *</label><input id="agEnd" class="form-control" type="datetime-local" required></div>',
         '<div class="form-group"><label for="agTarget">Katılım hedefi</label><input id="agTarget" class="form-control" type="number" min="1" value="50"></div>'
     ].join("");
@@ -634,7 +636,11 @@ function heritageFields() {
 }
 
 function announceFields() {
+    const now = new Date();
+    const pad = (n) => String(n).padStart(2, "0");
+    const defaultValue = now.getFullYear() + "-" + pad(now.getMonth() + 1) + "-" + pad(now.getDate()) + "T" + pad(now.getHours()) + ":" + pad(now.getMinutes());
     return ['<div class="form-group"><label for="anTitle">Duyuru *</label><textarea id="anTitle" class="form-control" maxlength="300" required></textarea></div>',
+        '<div class="form-group"><label for="anDate">Yayın tarihi</label><input id="anDate" class="form-control" type="datetime-local" value="' + defaultValue + '"></div>',
         '<div class="form-group" style="display:flex;gap:8px;align-items:center"><input id="anImportant" type="checkbox" style="width:18px;height:18px"><label for="anImportant" style="margin:0">Önemli duyuru</label></div>'
     ].join("");
 }
@@ -716,15 +722,16 @@ async function handleAdminSubmit(form) {
             const title = $("#apTitle", form).value.trim();
             if (!title) throw new Error("Başlık gerekli");
             const img = await readImage(form, "ap");
+            const dateInput = $("#apDate", form).value;
             await createPost({
                 title,
                 description: $("#apDesc", form).value.trim(),
-                category: $("#apCat", form).value,
+                category: "Güncel",
                 imageUrl: img ? img.imageUrl : "",
                 thumbnailUrl: img ? img.thumbnailUrl : "",
                 content: $("#apContent", form).value.split("\n").map((l) => l.trim()).filter(Boolean),
                 authorId: uid,
-                date: new Date().toISOString()
+                date: dateInput ? new Date(dateInput).toISOString() : new Date().toISOString()
             });
             toast("Haber eklendi.");
         } else if (kind === "photo") {
@@ -750,6 +757,7 @@ async function handleAdminSubmit(form) {
             await createEvent({
                 title,
                 date,
+                endDate: $("#aeEnd", form).value || "",
                 time: $("#aeTime", form).value,
                 location: $("#aeLoc", form).value.trim(),
                 description: $("#aeDesc", form).value.trim(),
@@ -765,10 +773,12 @@ async function handleAdminSubmit(form) {
             if (!prize) throw new Error("Ödül gerekli");
             if (!end) throw new Error("Bitiş tarihi gerekli");
             const img = await readImage(form, "agImg");
+            const startInput = $("#agStart", form).value;
             await createGiveaway({
                 title,
                 prize,
                 description: $("#agDesc", form).value.trim(),
+                startDate: startInput ? new Date(startInput).toISOString() : "",
                 endDate: new Date(end).toISOString(),
                 target: Number($("#agTarget", form).value) || 50,
                 imageUrl: img ? img.imageUrl : "",
@@ -810,11 +820,12 @@ async function handleAdminSubmit(form) {
         } else if (kind === "announce") {
             const title = $("#anTitle", form).value.trim();
             if (!title) throw new Error("Duyuru gerekli");
+            const dateInput = $("#anDate", form).value;
             await createAnnouncement({
                 title,
                 important: $("#anImportant", form).checked,
                 authorId: uid,
-                date: new Date().toISOString()
+                date: dateInput ? new Date(dateInput).toISOString() : new Date().toISOString()
             });
             toast("Duyuru yayınlandı.");
         }

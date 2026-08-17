@@ -3,7 +3,7 @@
    Çekilişler: aktif çekiliş listesi ve katılım butonu.
    ============================================================ */
 
-import { $, $$, esc, toast, fmtDate, fmtDateTime, renderError } from "./app.js";
+import { $, $$, esc, toast, imgFallback, fmtDate, fmtDateTime, renderError } from "./app.js";
 import { listGiveaways, enterGiveaway } from "./firebase.js";
 import { getCurrentUser } from "./auth.js";
 
@@ -62,6 +62,7 @@ export async function renderGiveaways() {
         $$("[data-giveaway-id]", el).forEach((btn) => {
             btn.addEventListener("click", () => joinGiveaway(btn.dataset.giveawayId, btn));
         });
+        $$("[data-giveaway-img]", el).forEach((img) => imgFallback(img, "Çekiliş görseli"));
     } catch (err) {
         console.error("Çekilişler yüklenemedi:", err);
         renderError(el, "Çekilişler");
@@ -73,6 +74,7 @@ function giveawayCard(g) {
     const pct = Math.min(100, Math.round((g.participants / g.target) * 100));
     return (
         '<article class="card giveaway-card">' +
+        (g.imageUrl ? '<img class="giveaway-img" src="' + esc(g.imageUrl) + '" alt="' + esc(g.title) + '" loading="lazy" data-giveaway-img="' + encodeURIComponent(g.id) + '">' : "") +
         '<div class="giveaway-head">' +
         "<h3>" + esc(g.title) + "</h3>" +
         '<span class="badge badge-giveaway">' + esc(g.prize || "Hediye") + "</span>" +

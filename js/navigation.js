@@ -6,6 +6,7 @@
 
 import { $, $$, renderError } from "./app.js";
 import { renderNewsList, renderNewsDetail } from "./news.js";
+import { renderAnnouncements } from "./announcements.js";
 import { renderGallery, openPhoto } from "./gallery.js";
 import { renderEvents, openEventModal } from "./events.js";
 import { renderGiveaways } from "./giveaway.js";
@@ -16,6 +17,7 @@ import { renderProfileScreen, renderAdminPanel } from "./auth.js";
 
 const TITLES = {
     news: "Haberler — Dülük Hub",
+    announcements: "Duyurular — Dülük Hub",
     events: "Etkinlikler — Dülük Hub",
     giveaway: "Çekilişler — Dülük Hub",
     gallery: "Köy Galerisi — Dülük Hub",
@@ -28,6 +30,7 @@ const TITLES = {
 
 const LOADERS = {
     news: (params) => (params ? renderNewsDetail(params) : renderNewsList()),
+    announcements: () => renderAnnouncements(),
     events: () => renderEvents(),
     giveaway: () => renderGiveaways(),
     gallery: () => renderGallery(),

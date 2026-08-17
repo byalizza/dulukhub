@@ -353,6 +353,7 @@ button {
 
 .icon-news { background: var(--tone-news-soft); color: var(--tone-news); }
 .icon-events { background: var(--tone-events-soft); color: var(--tone-events); }
+.icon-announce { background: var(--tone-events-soft); color: var(--tone-events); }
 .icon-giveaway { background: var(--tone-giveaway-soft); color: var(--tone-giveaway); }
 .icon-gallery { background: var(--tone-gallery-soft); color: var(--tone-gallery); }
 .icon-stories { background: var(--tone-stories-soft); color: var(--tone-stories); }

@@ -172,7 +172,7 @@ function endSession() {
 
 function parseScreen() {
     const raw = location.hash.replace(/^#\/?/, "").split("/").filter(Boolean)[0] || "news";
-    return ["news", "events", "giveaway", "gallery", "stories", "heritage", "settings", "profile", "admin"].includes(raw) ? raw : "news";
+    return ["news", "announcements", "events", "giveaway", "gallery", "stories", "heritage", "settings", "profile", "admin"].includes(raw) ? raw : "news";
 }
 
 function updateDrawerUser() {
@@ -556,7 +556,7 @@ function postFields() {
     return ['<div class="form-group"><label for="apTitle">Başlık *</label><input id="apTitle" class="form-control" maxlength="150" required></div>',
         '<div class="form-group"><label for="apDesc">Kısa açıklama</label><textarea id="apDesc" class="form-control" maxlength="500"></textarea></div>',
         '<div class="form-group"><label for="apCat">Kategori</label><select id="apCat" class="form-control"><option>Güncel</option><option>Etkinlik</option><option>Köy</option></select></div>',
-        '<div class="form-group"><label for="apCover">Görsel bağlantısı</label><input id="apCover" class="form-control" type="url" placeholder="https://..."></div>',
+        imgField("ap", "Görsel"),
         '<div class="form-group"><label for="apContent">İçerik (her satır bir paragraf)</label><textarea id="apContent" class="form-control" maxlength="8000"></textarea></div>'
     ].join("");
 }
@@ -564,8 +564,7 @@ function postFields() {
 function photoFields() {
     return ['<div class="form-group"><label for="afTitle">Başlık *</label><input id="afTitle" class="form-control" maxlength="120" required></div>',
         '<div class="form-group"><label for="afDesc">Açıklama</label><textarea id="afDesc" class="form-control" maxlength="300"></textarea></div>',
-        '<div class="form-group"><label for="afFile">Fotoğraf dosyası (otomatik küçültülür)</label><input id="afFile" type="file" accept="image/*"></div>',
-        '<div class="form-group"><label for="afUrl">veya görsel bağlantısı</label><input id="afUrl" class="form-control" type="url" placeholder="https://..."></div>'
+        imgField("afImg", "Fotoğraf", true)
     ].join("");
 }
 
@@ -574,6 +573,7 @@ function eventFields() {
         '<div class="form-group"><label for="aeDate">Tarih *</label><input id="aeDate" class="form-control" type="date" required></div>',
         '<div class="form-group"><label for="aeTime">Saat</label><input id="aeTime" class="form-control" type="time"></div>',
         '<div class="form-group"><label for="aeLoc">Konum</label><input id="aeLoc" class="form-control" maxlength="120"></div>',
+        imgField("aeImg", "Görsel"),
         '<div class="form-group"><label for="aeDesc">Açıklama</label><textarea id="aeDesc" class="form-control" maxlength="1500"></textarea></div>'
     ].join("");
 }
@@ -581,6 +581,7 @@ function eventFields() {
 function giveawayFields() {
     return ['<div class="form-group"><label for="agTitle">Çekiliş adı *</label><input id="agTitle" class="form-control" maxlength="120" required></div>',
         '<div class="form-group"><label for="agPrize">Ödül *</label><input id="agPrize" class="form-control" maxlength="120" required></div>',
+        imgField("agImg", "Görsel"),
         '<div class="form-group"><label for="agDesc">Açıklama</label><textarea id="agDesc" class="form-control" maxlength="600"></textarea></div>',
         '<div class="form-group"><label for="agEnd">Bitiş tarihi *</label><input id="agEnd" class="form-control" type="datetime-local" required></div>',
         '<div class="form-group"><label for="agTarget">Katılım hedefi</label><input id="agTarget" class="form-control" type="number" min="1" value="50"></div>'
@@ -590,6 +591,7 @@ function giveawayFields() {
 function storyFields() {
     return ['<div class="form-group"><label for="asTitle">Başlık *</label><input id="asTitle" class="form-control" maxlength="120" required></div>',
         '<div class="form-group"><label for="asContent">Hikâye *</label><textarea id="asContent" class="form-control" maxlength="2000" required></textarea></div>',
+        imgField("asImg", "Görsel"),
         '<div class="form-group"><label for="asAuthor">Anlatan</label><input id="asAuthor" class="form-control" maxlength="60"></div>'
     ].join("");
 }
@@ -597,8 +599,8 @@ function storyFields() {
 function heritageFields() {
     return ['<div class="form-group"><label for="ahTitle">Ad *</label><input id="ahTitle" class="form-control" maxlength="120" required></div>',
         '<div class="form-group"><label for="ahEra">Dönem</label><input id="ahEra" class="form-control" maxlength="60" placeholder="ör. Roma Dönemi"></div>',
-        '<div class="form-group"><label for="ahDesc">Açıklama</label><textarea id="ahDesc" class="form-control" maxlength="800"></textarea></div>',
-        '<div class="form-group"><label for="ahUrl">Görsel bağlantısı</label><input id="ahUrl" class="form-control" type="url" placeholder="https://..."></div>'
+        imgField("ahImg", "Görsel"),
+        '<div class="form-group"><label for="ahDesc">Açıklama</label><textarea id="ahDesc" class="form-control" maxlength="800"></textarea></div>'
     ].join("");
 }
 
@@ -608,8 +610,65 @@ function announceFields() {
     ].join("");
 }
 
+/* ---------- Görsel seçici (dosya + bağlantı + önizleme) ---------- */
+
+function imgField(id, label, required) {
+    return '<div class="form-group">' +
+        "<label>" + esc(label) + (required ? " *" : "") + "</label>" +
+        '<input type="file" accept="image/*" data-img-file="' + id + '">' +
+        '<input class="form-control" type="url" placeholder="veya görsel bağlantısı (https://...)" data-img-url="' + id + '">' +
+        '<img class="img-preview" data-img-preview="' + id + '" alt="Görsel önizleme" hidden></div>';
+}
+
+function bindImageFields(form) {
+    $$("[data-img-file]", form).forEach((fileInput) => {
+        const id = fileInput.dataset.imgFile;
+        const urlInput = form.querySelector('[data-img-url="' + id + '"]');
+        const preview = form.querySelector('[data-img-preview="' + id + '"]');
+
+        const show = (src) => {
+            if (!src) return;
+            preview.src = src;
+            preview.hidden = false;
+        };
+
+        fileInput.addEventListener("change", () => {
+            const file = fileInput.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = () => show(reader.result);
+            reader.readAsDataURL(file);
+            if (urlInput) urlInput.value = "";
+        });
+
+        if (urlInput) {
+            urlInput.addEventListener("input", () => {
+                if (urlInput.value.trim()) {
+                    fileInput.value = "";
+                    show(urlInput.value.trim());
+                }
+            });
+        }
+    });
+}
+
+async function readImage(form, id) {
+    const fileInput = form.querySelector('[data-img-file="' + id + '"]');
+    const urlInput = form.querySelector('[data-img-url="' + id + '"]');
+    if (!fileInput || !urlInput) return null;
+    const file = fileInput.files[0];
+    const url = urlInput.value.trim();
+    if (file) {
+        const urls = await processPhotoFile(file);
+        return urls;
+    }
+    if (url) return { thumbnailUrl: url, imageUrl: url };
+    return null;
+}
+
 function bindAdminForms(el) {
     $$("[data-admin-form]", el).forEach((form) => {
+        bindImageFields(form);
         form.addEventListener("submit", (e) => {
             e.preventDefault();
             handleAdminSubmit(form);
@@ -627,11 +686,13 @@ async function handleAdminSubmit(form) {
         if (kind === "post") {
             const title = $("#apTitle", form).value.trim();
             if (!title) throw new Error("Başlık gerekli");
+            const img = await readImage(form, "ap");
             await createPost({
                 title,
                 description: $("#apDesc", form).value.trim(),
                 category: $("#apCat", form).value,
-                imageUrl: $("#apCover", form).value.trim(),
+                imageUrl: img ? img.imageUrl : "",
+                thumbnailUrl: img ? img.thumbnailUrl : "",
                 content: $("#apContent", form).value.split("\n").map((l) => l.trim()).filter(Boolean),
                 authorId: uid,
                 date: new Date().toISOString()
@@ -639,32 +700,14 @@ async function handleAdminSubmit(form) {
             toast("Haber eklendi.");
         } else if (kind === "photo") {
             const title = $("#afTitle", form).value.trim();
-            const file = $("#afFile", form).files[0];
-            const url = $("#afUrl", form).value.trim();
             if (!title) throw new Error("Başlık gerekli");
-
-            let thumbnailUrl =
-                "";
-            let imageUrl = "";
-            if (file) {
-                try {
-                    const urls = await processPhotoFile(file);
-                    thumbnailUrl = urls.thumbnailUrl;
-                    imageUrl = urls.imageUrl;
-                } catch (err) {
-                    console.warn("Fotoğraf işlenemedi:", err);
-                }
-            }
-            if (!imageUrl && url) {
-                thumbnailUrl = url;
-                imageUrl = url;
-            }
-            if (!imageUrl) throw new Error("Bir fotoğraf dosyası seçin veya görsel bağlantısı girin");
+            const img = await readImage(form, "afImg");
+            if (!img) throw new Error("Bir fotoğraf dosyası seçin veya görsel bağlantısı girin");
             await createPhoto({
                 title,
                 description: $("#afDesc", form).value.trim(),
-                thumbnailUrl,
-                imageUrl,
+                thumbnailUrl: img.thumbnailUrl,
+                imageUrl: img.imageUrl,
                 authorId: uid,
                 date: new Date().toISOString()
             });
@@ -674,12 +717,14 @@ async function handleAdminSubmit(form) {
             const date = $("#aeDate", form).value;
             if (!title) throw new Error("Etkinlik adı gerekli");
             if (!date) throw new Error("Tarih gerekli");
+            const img = await readImage(form, "aeImg");
             await createEvent({
                 title,
                 date,
                 time: $("#aeTime", form).value,
                 location: $("#aeLoc", form).value.trim(),
                 description: $("#aeDesc", form).value.trim(),
+                imageUrl: img ? img.imageUrl : "",
                 authorId: uid
             });
             toast("Etkinlik eklendi.");
@@ -690,12 +735,15 @@ async function handleAdminSubmit(form) {
             if (!title) throw new Error("Çekiliş adı gerekli");
             if (!prize) throw new Error("Ödül gerekli");
             if (!end) throw new Error("Bitiş tarihi gerekli");
+            const img = await readImage(form, "agImg");
             await createGiveaway({
                 title,
                 prize,
                 description: $("#agDesc", form).value.trim(),
                 endDate: new Date(end).toISOString(),
                 target: Number($("#agTarget", form).value) || 50,
+                imageUrl: img ? img.imageUrl : "",
+                thumbnailUrl: img ? img.thumbnailUrl : "",
                 authorId: uid
             });
             toast("Çekiliş eklendi.");
@@ -704,11 +752,14 @@ async function handleAdminSubmit(form) {
             const content = $("#asContent", form).value.trim();
             if (!title) throw new Error("Başlık gerekli");
             if (!content) throw new Error("Hikâye gerekli");
+            const img = await readImage(form, "asImg");
             await createStory({
                 title,
                 content,
                 author: $("#asAuthor", form).value.trim(),
                 likes: 0,
+                imageUrl: img ? img.imageUrl : "",
+                thumbnailUrl: img ? img.thumbnailUrl : "",
                 authorId: uid,
                 date: new Date().toISOString()
             });
@@ -716,11 +767,13 @@ async function handleAdminSubmit(form) {
         } else if (kind === "heritage") {
             const title = $("#ahTitle", form).value.trim();
             if (!title) throw new Error("Ad gerekli");
+            const img = await readImage(form, "ahImg");
             await createHeritageItem({
                 title,
                 era: $("#ahEra", form).value.trim(),
                 description: $("#ahDesc", form).value.trim(),
-                imageUrl: $("#ahUrl", form).value.trim(),
+                imageUrl: img ? img.imageUrl : "",
+                thumbnailUrl: img ? img.thumbnailUrl : "",
                 authorId: uid,
                 date: new Date().toISOString()
             });

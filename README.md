@@ -8,7 +8,7 @@ Dülük Köyü için hazırlanmış **mobil-first** topluluk web sitesi — tele
 
 - Mobil-first tasarım: sol üst hamburger menü, soldan açılan renkli çekmece (tablar dikey sıralanır), telefonda uygulama hissi
 - **Zorunlu kayıt / giriş** — misafir girişi yoktur. Kayıt: kullanıcı adı + **e-posta veya telefon** + şifre (Firebase'e kaydedilir)
-- Ekranlar: Haberler (filtre + detay), Etkinlikler, Çekilişler (katılım + ilerleme), Köy Galerisi (kare ızgara + lightbox), Köy Hikayeleri (beğeni), Tarihi Eserler, Ayarlar, Profilim, Yönetim
+- Ekranlar: Haberler (filtre + detay), Duyurular, Etkinlikler, Çekilişler (katılım + ilerleme), Köy Galerisi (kare ızgara + lightbox), Köy Hikayeleri (beğeni), Tarihi Eserler, Ayarlar, Profilim, Yönetim
 - Yönetim paneli: çekmecedeki **"Yönetim"** satırı → yetki kodu (**355334**) girişi; yalnızca `role: "admin"` sahibi hesaplar içeri girer
 - SPA hash router, geri/ileri tuşu desteği, karanlık tema (sistem algılama + manuel)
 - Firebase: Authentication (e-posta/şifre; telefon girişi de e-posta eşlemesiyle çalışır) ve Firestore
@@ -34,6 +34,7 @@ dulukhub/
 │   ├── data.js              Demo içerik (Firestore boşken gösterilir)
 │   ├── auth.js              Zorunlu kayıt/giriş kapısı, profil, Yönetim kodu, admin paneli
 │   ├── news.js              Haberler listesi ve detay
+│   ├── announcements.js     Duyurular ekranı
 │   ├── events.js            Etkinlikler ve detay modali
 │   ├── giveaway.js          Çekilişler ve katılım
 │   ├── gallery.js           Galeri ızgarası ve lightbox

@@ -404,7 +404,8 @@ function announceToItem(doc) {
         id: doc.id,
         title: d.title || "",
         date: toISO(d.date || d.createdAt) || new Date().toISOString(),
-        important: !!d.important
+        important: !!d.important,
+        content: d.content || ""
     };
 }
 

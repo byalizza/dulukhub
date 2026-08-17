@@ -3,7 +3,7 @@
    Köy hikayeleri: nesilden nesile aktarılan hatıralar.
    ============================================================ */
 
-import { $, $$, esc, toast, fmtDate, initials, renderError } from "./app.js";
+import { $, $$, esc, toast, fmtDate, imgFallback, initials, renderError } from "./app.js";
 import { listStories } from "./firebase.js";
 import { getCurrentUser } from "./auth.js";
 
@@ -62,6 +62,7 @@ export async function renderStories() {
         $$("[data-story-id]", el).forEach((btn) => {
             btn.addEventListener("click", () => likeStory(btn.dataset.storyId, btn));
         });
+        $$("[data-story-img]", el).forEach((img) => imgFallback(img, "Hikâye görseli"));
     } catch (err) {
         console.error("Hikayeler yüklenemedi:", err);
         renderError(el, "Köy Hikayeleri");
@@ -79,6 +80,7 @@ function storyCard(s) {
         "<span>•</span><span>" + fmtDate(s.date) + "</span>" +
         "</div>" +
         "<h3>" + esc(s.title) + "</h3>" +
+        (s.imageUrl ? '<img class="story-img" src="' + esc(s.imageUrl) + '" alt="' + esc(s.title) + '" loading="lazy" data-story-img="' + encodeURIComponent(s.id) + '">' : "") +
         '<p class="content">' + esc(s.content || "") + "</p>" +
         '<div class="story-meta">' +
         '<button type="button" class="btn btn-sm ' + (liked ? "btn-primary" : "btn-ghost") + '" data-story-id="' + encodeURIComponent(s.id) + '">' +

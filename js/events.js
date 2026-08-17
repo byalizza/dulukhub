@@ -3,7 +3,7 @@
    Etkinlikler: yaklaşan etkinlik listesi ve detay modali.
    ============================================================ */
 
-import { $, $$, esc, fmtDate, monthShort, openModal, renderError } from "./app.js";
+import { $, $$, esc, imgFallback, fmtDate, monthShort, openModal, renderError } from "./app.js";
 import { listEvents } from "./firebase.js";
 
 let cachedEvents = [];
@@ -36,6 +36,7 @@ export async function renderEvents() {
         $$("[data-event-id]", el).forEach((btn) => {
             btn.addEventListener("click", () => openEventModal(decodeURIComponent(btn.dataset.eventId)));
         });
+        $$("[data-event-img]", el).forEach((img) => imgFallback(img, "Etkinlik görseli"));
     } catch (err) {
         console.error("Etkinlikler yüklenemedi:", err);
         renderError(el, "Etkinlikler");
@@ -46,6 +47,9 @@ function eventCard(e) {
     const isSoon = new Date(e.date) - Date.now() < 7 * 86400000;
     return (
         '<article class="card event-card">' +
+        (e.imageUrl
+            ? '<img class="event-img" src="' + esc(e.imageUrl) + '" alt="' + esc(e.title) + '" loading="lazy" data-event-img="' + encodeURIComponent(e.id) + '">'
+            : "") +
         '<div class="event-date' + (isSoon ? " accent" : "") + '">' +
         '<span class="day">' + esc(new Date(e.date).getDate()) + "</span>" +
         '<span class="month">' + monthShort(e.date) + "</span>" +
@@ -79,11 +83,16 @@ export function openEventModal(id) {
     openModal({
         title: "Etkinlik",
         content:
+            (ev.imageUrl ? '<img class="event-img" src="' + esc(ev.imageUrl) + '" alt="' + esc(ev.title) + '">' : "") +
             '<div class="form-group"><label>Tarih</label><p style="margin:0;font-weight:600">' + esc(fmtDate(ev.date)) + "</p></div>" +
             (ev.time ? '<div class="form-group"><label>Saat</label><p style="margin:0;font-weight:600">' + esc(ev.time) + "</p></div>" : "") +
             (ev.location ? '<div class="form-group"><label>Konum</label><p style="margin:0;font-weight:600">' + esc(ev.location) + "</p></div>" : "") +
             '<div class="form-group"><label>Açıklama</label><p style="margin:0;line-height:1.7">' + esc(ev.description || "Açıklama eklenmedi.") + "</p></div>" +
             '<div style="margin-top:18px;display:flex;justify-content:flex-end">' +
-            '<button type="button" class="btn btn-primary btn-sm js-modal-close">Kapat</button></div>'
+            '<button type="button" class="btn btn-primary btn-sm js-modal-close">Kapat</button></div>',
+        onMount: (dialog) => {
+            const img = dialog.querySelector(".event-img");
+            if (img) imgFallback(img, "Etkinlik görseli");
+        }
     });
 }

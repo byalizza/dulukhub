@@ -1,11 +1,10 @@
 /* ============================================================
    Dülük Hub — settings.js
-   Ayarlar: profil, bildirimler, yönetim girişi, çıkış, hakkında.
+   Ayarlar: bildirimler, yönetim girişi, hakkında.
    ============================================================ */
 
-import { $, esc, initials, toast } from "./app.js";
-import { navigateTo } from "./navigation.js";
-import { getCurrentProfile, getCurrentUser, openAdminCodeModal, logout } from "./auth.js";
+import { $, esc, toast } from "./app.js";
+import { openAdminCodeModal } from "./auth.js";
 
 const NOTIF_KEYS = {
     email: "dulukhub-notif-email",
@@ -25,20 +24,10 @@ function togglePref(key, btn) {
 
 export async function renderSettings() {
     const el = $("#settingsContent");
-    const user = getCurrentUser();
-    const profile = getCurrentProfile();
-    const name = (profile && (profile.displayName || profile.username)) || "";
-    const contact = (profile && (profile.phone || profile.email)) || (user ? user.email : "");
 
     el.innerHTML =
         '<header class="screen-head"><h1>Ayarlar</h1><p>Uygulama tercihleri ve hesap</p></header>' +
         '<div class="settings-group">' +
-
-        '<div class="card setting-row" style="cursor:pointer" data-go="profile">' +
-        '<span class="nav-icon icon-profile">' +
-        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>' +
-        "<div><strong>" + esc(name || "Profilim") + "</strong><small>" + esc(contact || "Hesap bilgilerini gör") + "</small></div>" +
-        '<span class="avatar" style="width:34px;height:34px;font-size:13px">' + esc(initials(name || "G")) + "</span></div>" +
 
         '<h2 class="settings-label">Bildirimler</h2>' +
         '<div class="card setting-row">' +
@@ -58,11 +47,6 @@ export async function renderSettings() {
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>' +
         "<div><strong>Yönetim</strong><small>Yetki kodu ile paneli aç</small></div>" +
         '<button type="button" class="btn btn-sm btn-ghost">Aç</button></div>' +
-
-        '<div class="card setting-row" style="cursor:pointer" id="settingsLogout">' +
-        '<span class="nav-icon icon-admin" style="color:var(--color-danger);background:var(--color-danger-soft)">' +
-        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg></span>' +
-        "<div><strong>Çıkış Yap</strong><small>Hesabından çık</small></div></div>" +
 
         '<div class="card" style="padding:16px;font-size:12.5px;color:var(--color-muted)">' +
         "<p style=\"margin:0 0 4px\"><strong style=\"color:var(--color-text)\">Dülük Köyü</strong> — Dülük Köyü'nün dijital buluşma noktası.</p>" +
@@ -84,11 +68,5 @@ export async function renderSettings() {
         });
     }
 
-    $('[data-go="profile"]', el).addEventListener("click", () => navigateTo("profile"));
     $("#settingsAdmin", el).addEventListener("click", openAdminCodeModal);
-    $("#settingsLogout", el).addEventListener("click", () => navigatelessout());
-}
-
-async function navigatelessout() {
-    await logout();
 }

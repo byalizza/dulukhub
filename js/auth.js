@@ -146,7 +146,6 @@ async function loadProfile(uid, defaults) {
 }
 
 function startSession() {
-    updateDrawerUser();
     $("#authGate").hidden = true;
     $("#app").hidden = false;
     if (!location.hash || location.hash === "#/" || location.hash === "#/news") {
@@ -173,19 +172,6 @@ function endSession() {
 function parseScreen() {
     const raw = location.hash.replace(/^#\/?/, "").split("/").filter(Boolean)[0] || "news";
     return ["news", "announcements", "events", "giveaway", "gallery", "stories", "heritage", "settings", "profile", "admin"].includes(raw) ? raw : "news";
-}
-
-function updateDrawerUser() {
-    const name = currentProfile && (currentProfile.displayName || currentProfile.username)
-        ? currentProfile.displayName || currentProfile.username
-        : (currentUser ? currentUser.email || currentUser.displayName : "");
-    const contact = currentProfile && currentProfile.phone
-        ? currentProfile.phone
-        : (currentUser ? currentUser.email || "" : "");
-
-    $("#drawerAvatar").textContent = initials(name || contact || "G");
-    $("#drawerName").textContent = name || "Kullanıcı";
-    $("#drawerEmail").textContent = contact || "hesap@dulukhub.com";
 }
 
 /* ---------- Kayıt / giriş kapısı ---------- */
@@ -546,7 +532,6 @@ function openEditProfileModal() {
             }
             await saveUserProfile(currentUser.uid, { displayName, username });
             currentProfile = { ...currentProfile, displayName, username };
-            updateDrawerUser();
             renderProfileScreen();
             toast("Profil güncellendi.");
         } catch (err) {

@@ -503,6 +503,7 @@ button {
 }
 
 .icon-news { background: var(--tone-news-soft); color: var(--tone-news); }
+.icon-social { background: var(--color-primary-soft); color: var(--color-primary); }
 .icon-events { background: var(--tone-events-soft); color: var(--tone-events); }
 .icon-announce { background: var(--tone-events-soft); color: var(--tone-events); }
 .icon-giveaway { background: var(--tone-giveaway-soft); color: var(--tone-giveaway); }

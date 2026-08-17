@@ -171,7 +171,7 @@ function endSession() {
 
 function parseScreen() {
     const raw = location.hash.replace(/^#\/?/, "").split("/").filter(Boolean)[0] || "news";
-    return ["news", "announcements", "events", "giveaway", "gallery", "stories", "heritage", "settings", "profile", "admin"].includes(raw) ? raw : "news";
+    return ["news", "announcements", "events", "giveaway", "gallery", "stories", "heritage", "settings", "social", "profile", "admin"].includes(raw) ? raw : "news";
 }
 
 /* ---------- Kayıt / giriş kapısı ---------- */

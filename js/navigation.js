@@ -13,6 +13,7 @@ import { renderGiveaways } from "./giveaway.js";
 import { renderStories } from "./stories.js";
 import { renderHeritage } from "./heritage.js";
 import { renderSettings } from "./settings.js";
+import { renderSocial } from "./social.js";
 import { renderProfileScreen, renderAdminPanel } from "./auth.js";
 
 const TITLES = {
@@ -24,6 +25,7 @@ const TITLES = {
     stories: "Köy Hikayeleri — Dülük Hub",
     heritage: "Tarihi Eserler — Dülük Hub",
     settings: "Ayarlar — Dülük Hub",
+    social: "Sosyal Medya — Dülük Hub",
     profile: "Profil — Dülük Hub",
     admin: "Yönetim — Dülük Hub"
 };
@@ -37,6 +39,7 @@ const LOADERS = {
     stories: () => renderStories(),
     heritage: () => renderHeritage(),
     settings: () => renderSettings(),
+    social: () => renderSocial(),
     profile: () => renderProfileScreen(),
     admin: () => renderAdminPanel()
 };

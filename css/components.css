@@ -459,6 +459,87 @@
     box-shadow: 0 4px 14px rgba(242, 184, 75, 0.35);
 }
 
+/* ---------- Sosyal medya ---------- */
+
+.social-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 13px;
+}
+
+.social-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    padding: 14px 17px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+}
+
+.social-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--color-border);
+    box-shadow: var(--shadow-soft);
+}
+
+.social-card:active {
+    transform: scale(0.98);
+}
+
+.social-tile {
+    flex: 0 0 auto;
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+}
+
+.social-tile svg {
+    width: 24px;
+    height: 24px;
+}
+
+.social-info {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.social-info strong {
+    display: block;
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 1.3;
+}
+
+.social-info small {
+    display: block;
+    font-size: 12.5px;
+    color: var(--color-muted);
+}
+
+.social-arrow {
+    flex: 0 0 auto;
+    width: 18px;
+    height: 18px;
+    color: var(--color-muted);
+    transition: transform var(--transition-fast), color var(--transition-fast);
+}
+
+.social-card:hover .social-arrow {
+    color: var(--color-primary);
+    transform: translateX(3px);
+}
+
 /* ---------- Haber detayı ---------- */
 
 .back-link {

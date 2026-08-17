@@ -29,6 +29,7 @@ import {
     createStory,
     createHeritageItem,
     deleteItem,
+    processPhotoFile,
     listPosts,
     listPhotos,
     listEvents,
@@ -563,7 +564,8 @@ function postFields() {
 function photoFields() {
     return ['<div class="form-group"><label for="afTitle">Başlık *</label><input id="afTitle" class="form-control" maxlength="120" required></div>',
         '<div class="form-group"><label for="afDesc">Açıklama</label><textarea id="afDesc" class="form-control" maxlength="300"></textarea></div>',
-        '<div class="form-group"><label for="afUrl">Görsel bağlantısı *</label><input id="afUrl" class="form-control" type="url" placeholder="https://..." required></div>'
+        '<div class="form-group"><label for="afFile">Fotoğraf dosyası (otomatik küçültülür)</label><input id="afFile" type="file" accept="image/*"></div>',
+        '<div class="form-group"><label for="afUrl">veya görsel bağlantısı</label><input id="afUrl" class="form-control" type="url" placeholder="https://..."></div>'
     ].join("");
 }
 
@@ -637,14 +639,32 @@ async function handleAdminSubmit(form) {
             toast("Haber eklendi.");
         } else if (kind === "photo") {
             const title = $("#afTitle", form).value.trim();
+            const file = $("#afFile", form).files[0];
             const url = $("#afUrl", form).value.trim();
             if (!title) throw new Error("Başlık gerekli");
-            if (!url) throw new Error("Görsel bağlantısı gerekli");
+
+            let thumbnailUrl =
+                "";
+            let imageUrl = "";
+            if (file) {
+                try {
+                    const urls = await processPhotoFile(file);
+                    thumbnailUrl = urls.thumbnailUrl;
+                    imageUrl = urls.imageUrl;
+                } catch (err) {
+                    console.warn("Fotoğraf işlenemedi:", err);
+                }
+            }
+            if (!imageUrl && url) {
+                thumbnailUrl = url;
+                imageUrl = url;
+            }
+            if (!imageUrl) throw new Error("Bir fotoğraf dosyası seçin veya görsel bağlantısı girin");
             await createPhoto({
                 title,
                 description: $("#afDesc", form).value.trim(),
-                thumbnailUrl: url,
-                imageUrl: url,
+                thumbnailUrl,
+                imageUrl,
                 authorId: uid,
                 date: new Date().toISOString()
             });

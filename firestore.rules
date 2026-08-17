@@ -37,12 +37,16 @@ service cloud.firestore {
     }
 
     // Fotoğraflar: herkes okuyabilir, yalnızca admin yazabilir.
+    // Görseller Storage yerine küçültülüp base64 olarak kaydedilir (belge limiti ~1MB).
     match /photos/{photoId} {
       allow read: if true;
       allow create: if isAdmin()
         && request.resource.data.imageUrl is string
         && request.resource.data.imageUrl.size() > 0
-        && request.resource.data.thumbnailUrl is string;
+        && request.resource.data.imageUrl.size() <= 750000
+        && request.resource.data.thumbnailUrl is string
+        && request.resource.data.thumbnailUrl.size() > 0
+        && request.resource.data.thumbnailUrl.size() <= 750000;
       allow update: if isAdmin();
       allow delete: if isAdmin();
     }

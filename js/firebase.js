@@ -306,6 +306,58 @@ export function demoSetSession(session) {
     }
 }
 
+/* ---------- Fotoğraf işleme (Storage yok: küçült + base64) ---------- */
+
+export async function processPhotoFile(file, onProgress) {
+    const thumbBlob = await compressImage(file, 640, 0.72);
+    if (onProgress) onProgress(50);
+    const fullBlob = await compressImage(file, 1200, 0.8);
+    if (onProgress) onProgress(80);
+    const thumbnailUrl = await blobToDataUrl(thumbBlob);
+    const imageUrl = await blobToDataUrl(fullBlob);
+    if (onProgress) onProgress(100);
+    return { thumbnailUrl, imageUrl };
+}
+
+function blobToDataUrl(blob) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+    });
+}
+
+function compressImage(file, maxDim, quality) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+            const img = new Image();
+            img.onload = () => {
+                const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+                if (scale === 1 && file.size < 250 * 1024) {
+                    resolve(file);
+                    return;
+                }
+                const canvas = document.createElement("canvas");
+                canvas.width = Math.round(img.width * scale);
+                canvas.height = Math.round(img.height * scale);
+                const ctx = canvas.getContext("2d");
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                canvas.toBlob(
+                    (blob) => (blob ? resolve(blob) : reject(new Error("Sıkıştırma başarısız"))),
+                    "image/jpeg",
+                    quality
+                );
+            };
+            img.onerror = reject;
+            img.src = reader.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
+
 /* ---------- Firestore dönüşümleri ---------- */
 
 function postToItem(doc) {

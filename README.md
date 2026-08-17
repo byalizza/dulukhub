@@ -14,7 +14,7 @@ Dülük Köyü için hazırlanmış **mobil-first** topluluk web sitesi — tele
 - Firebase: Authentication (e-posta/şifre; telefon girişi de e-posta eşlemesiyle çalışır) ve Firestore
 - Admin yönetimi: haber, fotoğraf, etkinlik, çekiliş, hikâye, tarihi eser, duyuru ekleme/silme
 - Demo mod: Firestore erişilemezse site bozulmaz; örnek içerik + yerel (localStorage) kayıtlarla çalışır
-- Görseller lazy-load; galeri görselleri görsel bağlantısıyla eklenir
+- Fotoğraflar: admin dosya seçer → istemcide küçültülür (thumbnail 640px / tam 1200px, JPEG) → base64 olarak Firestore'a kaydedilir; Storage kullanılmaz
 - Erişilebilirlik: semantik HTML, klavye (Tab/Enter/Esc), `aria-current`, focus yönetimi, `prefers-reduced-motion`
 
 ## Klasör yapısı

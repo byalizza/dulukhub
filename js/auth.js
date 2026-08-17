@@ -239,7 +239,7 @@ function bindGate() {
     const form = $("#authForm", host);
     if (form) form.addEventListener("submit", (e) => {
         e.preventDefault();
-        submitAuth($("#afUsername") ? "register" : "login", form);
+        submitAuth(!!$("#afUsername"), form);
     });
 }
 

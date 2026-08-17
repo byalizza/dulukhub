@@ -620,6 +620,32 @@ button {
     line-height: 1.7;
 }
 
+.app-footer .footer-ig {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    margin: 0 0 3px;
+    padding: 7px 15px;
+    border-radius: 999px;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface-2);
+    color: var(--color-text);
+    font-size: 13px;
+    font-weight: 700;
+    transition: border-color var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
+}
+
+.app-footer .footer-ig svg {
+    width: 16px;
+    height: 16px;
+}
+
+.app-footer .footer-ig:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    transform: translateY(-1px);
+}
+
 @media (min-width: 900px) {
     .app-footer {
         border-radius: var(--radius-card);

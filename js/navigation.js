@@ -210,8 +210,8 @@ function initScrollTop() {
 
 const FOOTER_HTML =
     '<footer class="app-footer">' +
-    "<strong>Dülük Köyü Muhtarlığı</strong>" +
-    "<span>İletişim: muhtarlik@dulukhub.com</span>" +
+    '<a class="footer-ig" href="https://instagram.com/dulukhub" target="_blank" rel="noopener noreferrer">' +
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.6" fill="currentColor"/></svg>@dulukhub</a>' +
     "<span>Dülük Köyü'nün dijital buluşma noktası</span>" +
     "<span>© 2026 Dülük Köyü</span>" +
     "</footer>";

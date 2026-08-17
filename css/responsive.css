@@ -43,6 +43,29 @@
         grid-template-columns: repeat(2, 1fr);
         gap: 16px;
     }
+
+    /* Ekranlar arasındaki boşluğu kapat (alt bilgi ile) */
+    .app-footer {
+        margin-top: 0;
+    }
+}
+
+/* ---------- Orta ekranlar: haber öne çıkan kart yatay ---------- */
+
+@media (min-width: 640px) {
+    .featured-news {
+        flex-direction: row;
+        align-items: stretch;
+    }
+
+    .featured-news .featured-cover {
+        flex: 0 0 46%;
+        aspect-ratio: auto;
+    }
+
+    .featured-body {
+        padding: 20px 22px;
+    }
 }
 
 /* ---------- Küçük telefonlar ---------- */
@@ -87,8 +110,11 @@
 @media (hover: none) and (pointer: coarse) {
     .news-card:hover,
     .event-card:hover,
+    .featured-news:hover,
+    .featured-news:hover .featured-cover img,
     .heritage-card:hover .heritage-cover img,
-    .gallery-item:hover img {
+    .gallery-item:hover img,
+    .gallery-item:hover img.loaded {
         transform: none;
     }
 }

@@ -1,6 +1,7 @@
 ﻿/* ============================================================
    Dülük Hub — news.js
-   Haberler: filtreli liste ve ekran içi detay görünümü.
+   Haberler: karşılama (hero), öne çıkan haber, filtreli ızgara
+   ve ekran içi detay görünümü.
    ============================================================ */
 
 import { $, $$, esc, fmtDate, imgFallback, renderError } from "./app.js";
@@ -20,9 +21,15 @@ export async function renderNewsList() {
 
     if (!cachedPosts.length) {
         el.innerHTML =
-            '<header class="screen-head"><h1>Haberler</h1><p>Dülük Köyü&rsquo;nden haberler</p></header>' +
-            '<div class="news-list">' +
-            '<div class="skeleton" style="height:118px"></div>'.repeat(4) +
+            '<section class="hero-banner">' +
+            '<span class="hero-eyebrow">🌾 Dülük Köyü</span>' +
+            '<h1>Köyün Dijital Buluşma Noktasına Hoş Geldiniz</h1>' +
+            '<p>Haberler, etkinlikler, çekilişler ve köyümüzün hikayesi — hepsi bir arada.</p>' +
+            "</section>" +
+            '<header class="screen-head"><h1>Haberler</h1><p>Dülük Köyü&rsquo;nden son haberler</p></header>' +
+            '<div class="skeleton" style="height:220px;border-radius:16px"></div>' +
+            '<div class="news-grid">' +
+            '<div class="skeleton" style="height:130px;border-radius:16px"></div>'.repeat(4) +
             "</div>";
     }
 
@@ -46,33 +53,68 @@ function renderList(el) {
     ).join("");
 
     el.innerHTML =
-        '<header class="screen-head"><h1>Haberler</h1><p>Dülük Köyü&rsquo;nden haberler</p></header>' +
-        '<div class="chips" role="group" aria-label="Haber kategorisi">' + chips + "</div>" +
-        '<div class="news-list" id="newsList"></div>';
+        '<section class="hero-banner">' +
+        '<span class="hero-eyebrow">🌾 Dülük Köyü</span>' +
+        '<h1>Köyün Dijital Buluşma Noktasına Hoş Geldiniz</h1>' +
+        '<p>Haberler, etkinlikler, çekilişler ve köyümüzün hikayesi — hepsi bir arada.</p>' +
+        "</section>" +
+        '<header class="screen-head"><h1>Haberler</h1><p>Dülük Köyü&rsquo;nden son haberler</p></header>' +
+        '<div class="tabs" role="tablist" aria-label="Haber kategorisi">' + chips + "</div>" +
+        '<div class="news-panel" id="newsPanel"></div>';
 
-    $$(".chip", el).forEach((chip) => {
+    $$(".tabs .chip", el).forEach((chip) => {
         chip.addEventListener("click", () => {
             currentFilter = chip.dataset.filter;
-            $$(".chip", el).forEach((c) => c.classList.toggle("active", c === chip));
-            renderItems($("#newsList"));
+            $$(".tabs .chip", el).forEach((c) => c.classList.toggle("active", c === chip));
+            renderItems($("#newsPanel"));
         });
     });
 
-    renderItems($("#newsList"));
+    renderItems($("#newsPanel"));
 }
 
-function renderItems(list) {
+function renderItems(panel) {
     const filtered = currentFilter === "Tümü"
         ? cachedPosts
         : cachedPosts.filter((p) => p.category === currentFilter);
 
     if (!filtered.length) {
-        list.innerHTML =
-            '<div class="empty-state"><h4>Henüz haber bulunmuyor.</h4><p>Yeni haberler burada görünecek.</p></div>';
+        panel.innerHTML =
+            '<div class="empty-state">' +
+            '<span class="empty-emoji">🌾</span>' +
+            "<h4>Bu kategoride henüz haber yok.</h4>" +
+            "<p>Yeni haberler burada görünecek. Bizi takip etmeye devam et!</p>" +
+            "</div>";
         return;
     }
 
-    list.innerHTML = filtered.map((p) =>
+    const featured = filtered[0];
+    const rest = filtered.slice(1);
+
+    panel.innerHTML =
+        '<button type="button" class="featured-news" data-news-id="' + encodeURIComponent(featured.id) + '" aria-label="' + esc(featured.title) + '">' +
+        '<div class="featured-cover">' +
+        '<img src="' + esc(featured.cover) + '" alt="' + esc(featured.title) + '" width="960" height="540">' +
+        "</div>" +
+        '<div class="featured-body">' +
+        '<div class="news-card-meta"><span class="badge badge-accent">' + esc(featured.category || "Güncel") + "</span><time>" + fmtDate(featured.date) + "</time></div>" +
+        "<h2>" + esc(featured.title) + "</h2>" +
+        "<p>" + esc(featured.description) + "</p>" +
+        '<span class="featured-more">Devamını oku</span>' +
+        "</div></button>" +
+        (rest.length ? '<div class="news-grid">' + rest.map((p) => newsCard(p)).join("") + "</div>" : "");
+
+    $$(".featured-news img, .news-card img", panel).forEach((img) => imgFallback(img, "Haber görseli"));
+
+    $$(".featured-news, .news-card", panel).forEach((card) => {
+        card.addEventListener("click", () => {
+            location.hash = "#/news/" + encodeURIComponent(card.dataset.newsId);
+        });
+    });
+}
+
+function newsCard(p) {
+    return (
         '<button type="button" class="news-card" data-news-id="' + encodeURIComponent(p.id) + '" aria-label="' + esc(p.title) + '">' +
         '<div class="news-card-cover">' +
         '<img src="' + esc(p.cover) + '" alt="' + esc(p.title) + '" loading="lazy" width="192" height="192">' +
@@ -82,15 +124,7 @@ function renderItems(list) {
         "<h3>" + esc(p.title) + "</h3>" +
         "<p>" + esc(p.description) + "</p>" +
         "</div></button>"
-    ).join("");
-
-    $$(".news-card img", list).forEach((img) => imgFallback(img, "Haber görseli"));
-
-    $$(".news-card", list).forEach((card) => {
-        card.addEventListener("click", () => {
-            location.hash = "#/news/" + encodeURIComponent(card.dataset.newsId);
-        });
-    });
+    );
 }
 
 /* ---------- Haber detayı ---------- */

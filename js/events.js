@@ -1,6 +1,6 @@
 /* ============================================================
    Dülük Hub — events.js
-   Etkinlikler: yaklaşan etkinlik listesi ve detay modali.
+   Etkinlikler: Bugün/Yarın etiketli zaman çizelgesi ve detay modali.
    ============================================================ */
 
 import { $, $$, esc, imgFallback, fmtDate, monthShort, openModal, renderError } from "./app.js";
@@ -8,10 +8,20 @@ import { listEvents } from "./firebase.js";
 
 let cachedEvents = [];
 
+function eventMoment(e) {
+    return new Date(e.date + "T" + (e.time || "00:00") + ":00");
+}
+
+function startOfToday() {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d;
+}
+
 export async function renderEvents() {
     const el = $("#eventsContent");
     el.innerHTML =
-        '<header class="screen-head"><h1>Etkinlikler</h1><p>Yaklaşan etkinlikler</p></header>' +
+        '<header class="screen-head"><h1>Etkinlikler</h1><p>Köy takvimi — yaklaşan etkinlikler</p></header>' +
         '<div class="skeleton" style="height:110px;border-radius:14px"></div>' +
         '<div class="skeleton" style="height:110px;border-radius:14px;margin-top:14px"></div>';
 
@@ -20,21 +30,28 @@ export async function renderEvents() {
 
         if (!cachedEvents.length) {
             el.innerHTML =
-                '<header class="screen-head"><h1>Etkinlikler</h1><p>Yaklaşan etkinlikler</p></header>' +
+                '<header class="screen-head"><h1>Etkinlikler</h1><p>Köy takvimi — yaklaşan etkinlikler</p></header>' +
                 '<div class="empty-state">' +
-                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M8 2v4"/><path d="M16 2v4"/><path d="M3 9h18"/><path d="m9 14 2 2 4-4"/></svg>' +
-                "<h3>Yaklaşan etkinlik bulunmuyor.</h3><p>Yeni etkinlikler duyurulduğunda burada görünecek.</p></div>";
+                '<span class="empty-emoji">🎉</span>' +
+                "<h4>Yaklaşan etkinlik bulunmuyor.</h4><p>Yeni etkinlikler duyurulduğunda burada görünecek.</p></div>";
             return;
         }
 
         el.innerHTML =
-            '<header class="screen-head"><h1>Etkinlikler</h1><p>Yaklaşan etkinlikler</p></header>' +
-            '<div class="event-list">' +
-            cachedEvents.map((e) => eventCard(e)).join("") +
+            '<header class="screen-head"><h1>Etkinlikler</h1><p>Köy takvimi — yaklaşan etkinlikler</p></header>' +
+            '<div class="event-timeline">' +
+            eventGroups().map(groupBlock).join("") +
             "</div>";
 
-        $$("[data-event-id]", el).forEach((btn) => {
-            btn.addEventListener("click", () => openEventModal(decodeURIComponent(btn.dataset.eventId)));
+        $$("[data-event-id]", el).forEach((item) => {
+            const open = () => openEventModal(decodeURIComponent(item.dataset.eventId));
+            item.addEventListener("click", open);
+            item.addEventListener("keydown", (e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    open();
+                }
+            });
         });
         $$("[data-event-img]", el).forEach((img) => imgFallback(img, "Etkinlik görseli"));
     } catch (err) {
@@ -43,19 +60,60 @@ export async function renderEvents() {
     }
 }
 
-function eventCard(e) {
-    const isSoon = new Date(e.date) - Date.now() < 7 * 86400000;
+function eventGroups() {
+    const today = startOfToday();
+    const groups = [
+        { key: "today", title: "Bugün" },
+        { key: "tomorrow", title: "Yarın" },
+        { key: "upcoming", title: "Yaklaşan" }
+    ];
+
+    groups.forEach((g) => (g.items = []));
+
+    cachedEvents.forEach((e) => {
+        const diffDays = Math.round((eventMoment(e).getTime() - today.getTime()) / 86400000);
+        if (diffDays <= 0) groups[0].items.push(e);
+        else if (diffDays === 1) groups[1].items.push(e);
+        else groups[2].items.push(e);
+    });
+
+    return groups.filter((g) => g.items.length);
+}
+
+function groupBlock(g) {
     return (
-        '<article class="card event-card">' +
+        '<section class="event-group">' +
+        '<h2 class="event-group-title">' + esc(g.title) + '<span class="event-group-count">' + g.items.length + "</span></h2>" +
+        '<div class="event-list">' + g.items.map(eventCard).join("") + "</div>" +
+        "</section>"
+    );
+}
+
+function eventCard(e) {
+    const moment = eventMoment(e);
+    const today = startOfToday();
+    const diffDays = Math.round((moment.getTime() - today.getTime()) / 86400000);
+    const chip =
+        diffDays <= 0
+            ? '<span class="event-chip is-today">Bugün</span>'
+            : diffDays === 1
+                ? '<span class="event-chip is-tomorrow">Yarın</span>'
+                : '<span class="event-chip">' + diffDays + " gün kaldı</span>";
+
+    return (
+        '<article class="card event-card" data-event-id="' + encodeURIComponent(e.id) + '" tabindex="0" role="button" aria-label="' + esc(e.title) + ' — detayı aç">' +
         (e.imageUrl
             ? '<img class="event-img" src="' + esc(e.imageUrl) + '" alt="' + esc(e.title) + '" loading="lazy" data-event-img="' + encodeURIComponent(e.id) + '">'
             : "") +
-        '<div class="event-date' + (isSoon ? " accent" : "") + '">' +
-        '<span class="day">' + esc(new Date(e.date).getDate()) + "</span>" +
+        '<div class="event-date' + (diffDays <= 1 ? " accent" : "") + '">' +
+        '<span class="day">' + esc(moment.getDate()) + "</span>" +
         '<span class="month">' + monthShort(e.date) + "</span>" +
         "</div>" +
         '<div class="event-info">' +
+        '<div class="event-info-head">' +
         "<h3>" + esc(e.title) + "</h3>" +
+        chip +
+        "</div>" +
         '<p class="meta">' +
         '<span>' +
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M8 2v4"/><path d="M16 2v4"/><path d="M3 9h18"/></svg>' +
@@ -69,7 +127,7 @@ function eventCard(e) {
             '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>' +
             esc(e.location) + "</span>" : "") +
         "</p>" +
-        '<button type="button" class="btn btn-sm btn-ghost" data-event-id="' + encodeURIComponent(e.id) + '">Detay</button>' +
+        '<button type="button" class="btn btn-sm btn-ghost" data-event-open="1">Detay</button>' +
         "</div></article>"
     );
 }

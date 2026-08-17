@@ -6,10 +6,10 @@ Dülük Köyü için hazırlanmış **mobil-first** topluluk web sitesi — tele
 
 ## Özellikler
 
-- Mobil-first tasarım: sol üst hamburger menü, soldan açılan renkli çekmece (tablar dikey sıralanır), telefonda uygulama hissi
+- Mobil-first tasarım: sol üst hamburger menü, soldan açılan **gruplu** renkli çekmece (Gündem / Kültür & Hafıza / Hesap), alt gezinti çubuğu (Haberler, Etkinlikler, Galeri, Profil)
 - **Zorunlu kayıt / giriş** — misafir girişi yoktur. Kayıt: kullanıcı adı + **e-posta veya telefon** + şifre (Firebase'e kaydedilir)
-- Ekranlar: Haberler (filtre + detay), Duyurular, Etkinlikler, Çekilişler (katılım + ilerleme), Köy Galerisi (kare ızgara + lightbox), Köy Hikayeleri (beğeni), Tarihi Eserler, Ayarlar, Profilim, Yönetim
-- Yönetim paneli: çekmecedeki **"Yönetim"** satırı → yetki kodu (**355334**) girişi; yalnızca `role: "admin"` sahibi hesaplar içeri girer
+- Ekranlar: Haberler (karşılama banner'ı + öne çıkan haber + filtreli ızgara + detay), Duyurular, Etkinlikler (Bugün/Yarın etiketli takvim görünümü), Çekilişler (canlı geri sayım + konfeti + ilerleme), Köy Galerisi (kategori filtreli ızgara + lightbox), Köy Hikayeleri (yazar avatarlı + kalp animasyonu), Tarihi Eserler, Ayarlar (bildirim tercihleri), Profilim (şimdiye kadar yapılanlar), Yönetim
+- Yönetim paneli: **Ayarlar → "Yönetim"** satırı → yetki kodu (**355334**) girişi; yalnızca `role: "admin"` sahibi hesaplar içeri girer
 - SPA hash router, geri/ileri tuşu desteği, karanlık tema (sistem algılama + manuel)
 - Firebase: Authentication (e-posta/şifre; telefon girişi de e-posta eşlemesiyle çalışır) ve Firestore
 - Admin yönetimi: haber, fotoğraf, etkinlik, çekiliş, hikâye, tarihi eser, duyuru ekleme/silme

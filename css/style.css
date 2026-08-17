@@ -6,32 +6,33 @@
 
 :root {
     --font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-head: "Playfair Display", Georgia, "Times New Roman", serif;
 
-    --color-primary: #1F5F46;
-    --color-primary-hover: #1A523C;
-    --color-primary-soft: rgba(31, 95, 70, 0.12);
-    --color-secondary: #2F7D5A;
-    --color-accent: #C89B3C;
-    --color-accent-soft: rgba(200, 155, 60, 0.16);
+    --color-primary: #2A7A5A;
+    --color-primary-hover: #22664B;
+    --color-primary-soft: rgba(42, 122, 90, 0.12);
+    --color-secondary: #3A8F6B;
+    --color-accent: #D4A373;
+    --color-accent-soft: rgba(212, 163, 115, 0.2);
 
-    --color-bg: #F6F7F4;
+    --color-bg: #F8F4EE;
     --color-surface: #FFFFFF;
-    --color-surface-2: #EEF1EC;
-    --color-text: #17201B;
-    --color-muted: #6D766F;
-    --color-border: #E2E6E2;
+    --color-surface-2: #EFE9DF;
+    --color-text: #1C211D;
+    --color-muted: #6E6A5F;
+    --color-border: #E5DED2;
     --color-danger: #B4442E;
     --color-danger-soft: rgba(180, 68, 46, 0.12);
     --color-success: #1F7A4D;
     --color-success-soft: rgba(31, 122, 77, 0.12);
 
     /* Sekme renkleri (soft zeminler) */
-    --tone-news: #1F5F46;
-    --tone-news-soft: rgba(31, 95, 70, 0.12);
-    --tone-events: #B07A22;
-    --tone-events-soft: rgba(200, 155, 60, 0.18);
-    --tone-giveaway: #6B4FA3;
-    --tone-giveaway-soft: rgba(107, 79, 163, 0.13);
+    --tone-news: #2A7A5A;
+    --tone-news-soft: rgba(42, 122, 90, 0.12);
+    --tone-events: #C0854A;
+    --tone-events-soft: rgba(212, 163, 115, 0.2);
+    --tone-giveaway: #7A5AB3;
+    --tone-giveaway-soft: rgba(122, 90, 179, 0.13);
     --tone-gallery: #1E7A78;
     --tone-gallery-soft: rgba(30, 122, 120, 0.13);
     --tone-stories: #C0562E;
@@ -41,13 +42,13 @@
     --tone-admin: #B4442E;
     --tone-admin-soft: rgba(180, 68, 46, 0.12);
 
-    --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.06);
+    --shadow-soft: 0 8px 30px rgba(0, 0, 0, 0.08);
     --shadow-modal: 0 18px 50px rgba(0, 0, 0, 0.18);
 
     --radius-sm: 8px;
-    --radius-btn: 10px;
-    --radius-card: 14px;
-    --radius-modal: 18px;
+    --radius-btn: 14px;
+    --radius-card: 16px;
+    --radius-modal: 20px;
 
     --transition-fast: 180ms ease;
 
@@ -56,22 +57,22 @@
 }
 
 [data-theme="dark"] {
-    --color-bg: #101412;
-    --color-surface: #171C19;
-    --color-surface-2: #1E2420;
-    --color-text: #F2F5F2;
-    --color-muted: #AAB3AC;
-    --color-border: #2A332E;
+    --color-bg: #121713;
+    --color-surface: #181D19;
+    --color-surface-2: #1F2621;
+    --color-text: #F2F4EE;
+    --color-muted: #A9B2A4;
+    --color-border: #2B332C;
     --color-primary-soft: rgba(122, 201, 160, 0.14);
-    --color-accent-soft: rgba(200, 155, 60, 0.18);
+    --color-accent-soft: rgba(212, 163, 115, 0.18);
     --tone-news-soft: rgba(122, 201, 160, 0.14);
-    --tone-events-soft: rgba(230, 185, 90, 0.16);
-    --tone-giveaway-soft: rgba(160, 130, 220, 0.14);
+    --tone-events-soft: rgba(230, 185, 120, 0.16);
+    --tone-giveaway-soft: rgba(165, 135, 220, 0.14);
     --tone-gallery-soft: rgba(90, 190, 186, 0.14);
     --tone-stories-soft: rgba(230, 130, 80, 0.14);
     --tone-heritage-soft: rgba(200, 165, 110, 0.15);
     --tone-admin-soft: rgba(220, 110, 90, 0.14);
-    --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.35);
+    --shadow-soft: 0 8px 30px rgba(0, 0, 0, 0.35);
     --shadow-modal: 0 18px 50px rgba(0, 0, 0, 0.55);
 }
 
@@ -88,9 +89,23 @@ body {
     font-size: 15px;
     line-height: 1.55;
     color: var(--color-text);
-    background: var(--color-bg);
+    background-color: var(--color-bg);
+    background-image:
+        radial-gradient(circle at 12% 8%, var(--color-accent-soft) 0, transparent 32%),
+        radial-gradient(circle at 88% 92%, var(--color-primary-soft) 0, transparent 34%),
+        radial-gradient(circle at 96% 4%, var(--color-accent-soft) 0, transparent 22%);
+    background-attachment: fixed;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+.screen-head h1,
+.gate-brand h1,
+.news-detail h1 {
+    font-family: var(--font-head);
+    letter-spacing: -0.01em;
 }
 
 * {
@@ -157,10 +172,28 @@ button {
     color: var(--color-primary);
 }
 
+.splash-logo img {
+    animation: splashPulse 1.4s ease-in-out infinite;
+}
+
+@keyframes splashPulse {
+    0%, 100% { transform: scale(1) rotate(0deg); }
+    50% { transform: scale(1.12) rotate(4deg); }
+}
+
 .splash p {
     margin: 0;
     font-size: 13px;
     color: var(--color-muted);
+}
+
+.splash-spinner {
+    width: 34px;
+    height: 34px;
+    border: 3px solid var(--color-surface-2);
+    border-top-color: var(--color-primary);
+    border-radius: 999px;
+    animation: spin 0.8s linear infinite;
 }
 
 /* ---------- Uygulama kabuğu ---------- */
@@ -220,11 +253,107 @@ button {
     color: var(--color-primary);
 }
 
+.brand img {
+    transition: transform var(--transition-fast);
+}
+
+.brand:hover img {
+    transform: rotate(-6deg) scale(1.08);
+}
+
 .header-actions {
     margin-left: auto;
     display: flex;
     align-items: center;
     gap: 6px;
+}
+
+/* ---------- Alt gezinti çubuğu (mobil) ---------- */
+
+.tab-bar {
+    flex: 0 0 auto;
+    display: flex;
+    padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--color-border);
+    background: var(--color-surface);
+    gap: 4px;
+}
+
+.tab-bar button {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 7px 4px 5px;
+    border: none;
+    border-radius: 14px;
+    background: none;
+    color: var(--color-muted);
+    font-size: 10.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: color var(--transition-fast), background var(--transition-fast);
+}
+
+.tab-bar button svg {
+    width: 21px;
+    height: 21px;
+}
+
+.tab-bar button[aria-current="page"] {
+    color: var(--color-primary);
+    background: var(--color-primary-soft);
+}
+
+@media (min-width: 900px) {
+    .tab-bar {
+        display: none;
+    }
+}
+
+/* ---------- Yukarı çık butonu ---------- */
+
+.scroll-top {
+    position: fixed;
+    right: 16px;
+    bottom: calc(84px + env(safe-area-inset-bottom));
+    z-index: 50;
+    width: 44px;
+    height: 44px;
+    border: none;
+    border-radius: 999px;
+    background: var(--color-primary);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 8px 24px rgba(42, 122, 90, 0.35);
+    transition: transform var(--transition-fast), opacity var(--transition-fast);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.scroll-top.show {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.scroll-top:hover {
+    transform: translateY(-3px);
+}
+
+.scroll-top svg {
+    width: 20px;
+    height: 20px;
+}
+
+@media (min-width: 900px) {
+    .scroll-top {
+        bottom: 24px;
+    }
 }
 
 /* ---------- Çekmece menü ---------- */
@@ -247,11 +376,23 @@ button {
     gap: 12px;
     padding: 16px 16px 14px;
     border-bottom: 1px solid var(--color-border);
+    background: linear-gradient(120deg, var(--color-primary-soft), transparent 70%);
 }
 
 .drawer-user .avatar {
-    width: 42px;
-    height: 42px;
+    width: 44px;
+    height: 44px;
+    box-shadow: 0 4px 12px var(--color-primary-soft);
+}
+
+.drawer-greeting {
+    display: block;
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+    margin-bottom: 1px;
 }
 
 .drawer-user strong {
@@ -262,7 +403,7 @@ button {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    max-width: 180px;
+    max-width: 170px;
 }
 
 .drawer-user span:not(.avatar) {
@@ -272,7 +413,7 @@ button {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    max-width: 180px;
+    max-width: 170px;
 }
 
 .drawer-items {
@@ -285,8 +426,20 @@ button {
     -webkit-overflow-scrolling: touch;
 }
 
-.drawer-items a,
-.drawer-admin {
+.drawer-group-label {
+    margin: 12px 12px 4px;
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+}
+
+.drawer-group-label:first-child {
+    margin-top: 4px;
+}
+
+.drawer-items a {
     display: flex;
     align-items: center;
     gap: 13px;
@@ -300,33 +453,63 @@ button {
     cursor: pointer;
     text-align: left;
     width: 100%;
-    transition: background var(--transition-fast);
+    transition: background var(--transition-fast), color var(--transition-fast);
 }
 
-.drawer-items a:hover,
-.drawer-admin:hover {
+.drawer-items a:hover {
     background: var(--color-surface-2);
 }
 
 .drawer-items a[aria-current="page"] {
-    background: var(--color-surface-2);
+    background: var(--color-primary-soft);
+    color: var(--color-primary);
+    border-left: 3px solid var(--color-primary);
+    border-radius: 12px 8px 8px 12px;
+}
+
+[data-theme="dark"] .drawer-items a[aria-current="page"] {
+    color: var(--color-text);
 }
 
 .drawer-items a[aria-current="page"] .nav-icon {
     transform: scale(1.06);
 }
 
-.drawer-admin {
-    color: var(--tone-admin);
-    margin-top: 4px;
+.drawer-bottom {
+    flex: 0 0 auto;
     border-top: 1px solid var(--color-border);
-    padding-top: 12px;
+    padding: 10px 10px 12px;
+}
+
+.drawer-logout {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    width: 100%;
+    padding: 11px 12px;
+    border: none;
+    border-radius: 12px;
+    background: none;
+    font-size: 14.5px;
+    font-weight: 700;
+    color: var(--color-danger);
+    cursor: pointer;
+    text-align: left;
+    transition: background var(--transition-fast);
+}
+
+.drawer-logout:hover {
+    background: var(--color-danger-soft);
+}
+
+.drawer-logout .nav-icon {
+    background: var(--color-danger-soft);
+    color: var(--color-danger);
 }
 
 .drawer-footer {
-    flex: 0 0 auto;
-    padding: 14px 16px;
-    border-top: 1px solid var(--color-border);
+    padding: 10px 16px 2px;
+    border-top: none;
 }
 
 .drawer-footer p {
@@ -418,7 +601,7 @@ button {
 .screen-inner {
     max-width: 780px;
     margin: 0 auto;
-    padding: 20px 16px 40px;
+    padding: 20px 16px 96px;
     min-height: 100%;
 }
 
@@ -429,8 +612,8 @@ button {
 
 .screen-head h1 {
     margin: 0 0 4px;
-    font-size: 24px;
-    font-weight: 800;
+    font-size: 26px;
+    font-weight: 700;
     line-height: 1.2;
     letter-spacing: -0.01em;
 }
@@ -439,6 +622,40 @@ button {
     margin: 0;
     font-size: 14px;
     color: var(--color-muted);
+}
+
+/* ---------- Sayfa alt bilgisi ---------- */
+
+.app-footer {
+    padding: 26px 20px calc(16px + env(safe-area-inset-bottom));
+    text-align: center;
+    font-size: 12px;
+    color: var(--color-muted);
+    border-top: 1px solid var(--color-border);
+    background: var(--color-surface);
+    border-radius: var(--radius-card) var(--radius-card) 0 0;
+    margin: 20px 0 0;
+}
+
+.app-footer strong {
+    display: block;
+    font-family: var(--font-head);
+    font-size: 14px;
+    color: var(--color-text);
+    margin-bottom: 4px;
+}
+
+.app-footer span {
+    display: block;
+    line-height: 1.7;
+}
+
+@media (min-width: 900px) {
+    .app-footer {
+        border-radius: var(--radius-card);
+        margin: 26px auto 0;
+        max-width: 860px;
+    }
 }
 
 @media (prefers-reduced-motion: no-preference) {

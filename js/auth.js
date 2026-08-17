@@ -95,8 +95,8 @@ function setAdminSession(on) {
 /* ---------- Oturum başlangıcı ---------- */
 
 export function initAuth() {
-    const adminEntry = $("#adminEntry");
-    if (adminEntry) adminEntry.addEventListener("click", openAdminCodeModal);
+    const drawerLogout = $("#drawerLogout");
+    if (drawerLogout) drawerLogout.addEventListener("click", logout);
 
     authMode().then((mode) => {
         authModeValue = mode;
@@ -438,7 +438,7 @@ export async function logout() {
 
 /* ---------- Profil ekranı ---------- */
 
-export function renderProfileScreen() {
+export async function renderProfileScreen() {
     const el = $("#profileContent");
     if (!currentUser || !currentProfile) {
         el.innerHTML = '<div class="empty-state"><h4>Oturum yok.</h4><p>Lütfen giriş yapın.</p></div>';
@@ -449,14 +449,21 @@ export function renderProfileScreen() {
     const name = (p.displayName || p.username || currentUser.email || "Kullanıcı").trim();
     const contact = p.phone || p.email || currentUser.email || "";
 
+    const joined = readStoredSet("dulukhub-giveaway-joined");
+    const liked = readStoredSet("dulukhub-story-likes");
+
     el.innerHTML =
-        '<header class="screen-head"><h1>Profilim</h1><p>Hesap bilgilerin</p></header>' +
+        '<header class="screen-head"><h1>Profilim</h1><p>Hesap bilgilerin ve katılımların</p></header>' +
         '<div class="card" style="padding:20px">' +
         '<div class="profile-head">' +
         '<span class="avatar">' + esc(initials(name)) + "</span>" +
         "<div><h2>" + esc(name) + "</h2>" +
         "<p>" + esc(contact) + (p.role === "admin" ? ' <span class="badge badge-admin">Yönetici</span>' : "") + "</p>" +
         "</div></div>" +
+        '<div class="profile-stats">' +
+        '<div class="profile-stat"><strong>' + joined.size + "</strong><span>Çekiliş</span></div>" +
+        '<div class="profile-stat"><strong>' + liked.size + "</strong><span>Beğenilen hikâye</span></div>" +
+        "</div>" +
         '<ul class="profile-details">' +
         "<li><span>Kullanıcı adı</span><strong>" + esc((p.username || name).replace(/^@/, "")) + "</strong></li>" +
         "<li><span>İletişim</span><strong>" + esc(contact || "-") + "</strong></li>" +
@@ -465,10 +472,47 @@ export function renderProfileScreen() {
         '<div class="profile-actions">' +
         '<button type="button" class="btn btn-ghost" id="editProfileBtn">Profili Düzenle</button>' +
         '<button type="button" class="btn btn-danger" id="logoutBtn">Çıkış Yap</button>' +
-        "</div></div>";
+        "</div></div>" +
+        '<div class="card profile-mine">' +
+        "<h3>Katıldığım çekilişler</h3>" +
+        '<div id="profileGiveaways">' + '<div class="loader"><div class="spinner"></div></div>' + "</div>" +
+        "</div>";
 
     $("#editProfileBtn", el).addEventListener("click", openEditProfileModal);
     $("#logoutBtn", el).addEventListener("click", logout);
+    renderProfileGiveaways($("#profileGiveaways"), joined);
+}
+
+function readStoredSet(key) {
+    try {
+        return new Set(JSON.parse(localStorage.getItem(key)) || []);
+    } catch (err) {
+        return new Set();
+    }
+}
+
+async function renderProfileGiveaways(box, joined) {
+    if (!joined.size) {
+        box.innerHTML =
+            '<p class="form-hint" style="margin:0">Henüz bir çekilişe katılmadın. <a href="#/giveaway" class="link-btn">Çekilişlere göz at</a></p>';
+        return;
+    }
+    try {
+        const all = await listGiveaways();
+        const mine = all.filter((g) => joined.has(g.id));
+        if (!mine.length) {
+            box.innerHTML = '<p class="form-hint" style="margin:0">Katıldığın çekilişler sona erdi. Yeni çekilişleri kaçırma!</p>';
+            return;
+        }
+        box.innerHTML = mine.map((g) =>
+            '<div class="profile-mine-item"><span class="badge badge-giveaway">' + esc(g.prize || "Hediye") + "</span>" +
+            "<strong>" + esc(g.title) + "</strong>" +
+            "<small>Bitiş: " + esc(fmtDate(g.endDate)) + "</small></div>"
+        ).join("");
+    } catch (err) {
+        console.error("Katılımlar yüklenemedi:", err);
+        box.innerHTML = '<p class="form-hint" style="margin:0">Katılımların listelenemedi.</p>';
+    }
 }
 
 /* ---------- Profil düzenleme ---------- */

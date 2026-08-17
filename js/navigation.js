@@ -1,7 +1,7 @@
 /* ============================================================
    Dülük Hub — navigation.js
-   Merkezi ekran yöneticisi, hash tabanlı SPA yönlendirme ve
-   sol çekmece menü kontrolü.
+   Merkezi ekran yöneticisi, hash tabanlı SPA yönlendirme,
+   sol çekmece menü, alt gezinti çubuğu ve yukarı çık butonu.
    ============================================================ */
 
 import { $, $$, renderError } from "./app.js";
@@ -81,6 +81,7 @@ async function router() {
     if (main) main.focus({ preventScroll: true });
 
     closeDrawer();
+    syncScrollTop(target);
 
     const loader = LOADERS[screen];
     if (!loader) return;
@@ -171,10 +172,65 @@ function initDrawer() {
     if (brandBtn) brandBtn.addEventListener("click", () => navigateTo("news"));
 }
 
+/* ---------- Alt gezinti çubuğu ---------- */
+
+function initTabBar() {
+    $$(".tab-bar [data-nav]").forEach((btn) => {
+        btn.addEventListener("click", () => navigateTo(btn.dataset.nav));
+    });
+}
+
+/* ---------- Yukarı çık butonu ---------- */
+
+function syncScrollTop(target) {
+    const btn = $("#scrollTop");
+    if (btn) btn.classList.toggle("show", target.scrollTop > 260);
+}
+
+function initScrollTop() {
+    const btn = $("#scrollTop");
+    if (!btn) return;
+
+    btn.addEventListener("click", () => {
+        const active = $(".screen:not([hidden])");
+        if (active) active.scrollTo({ top: 0, behavior: "smooth" });
+    });
+
+    document.addEventListener(
+        "scroll",
+        () => {
+            const active = $(".screen:not([hidden])");
+            if (active) syncScrollTop(active);
+        },
+        { capture: true, passive: true }
+    );
+}
+
+/* ---------- Sayfa alt bilgisi ---------- */
+
+const FOOTER_HTML =
+    '<footer class="app-footer">' +
+    "<strong>Dülük Köyü Muhtarlığı</strong>" +
+    "<span>İletişim: muhtarlik@dulukhub.com</span>" +
+    "<span>Dülük Köyü'nün dijital buluşma noktası</span>" +
+    "<span>© 2026 Dülük Köyü</span>" +
+    "</footer>";
+
+function injectFooters() {
+    $$(".screen").forEach((screen) => {
+        if (!screen.querySelector(".app-footer")) {
+            screen.insertAdjacentHTML("beforeend", FOOTER_HTML);
+        }
+    });
+}
+
 /* ---------- Başlatma ---------- */
 
 export function initRouter() {
     initDrawer();
+    initTabBar();
+    initScrollTop();
+    injectFooters();
 
     // İlk yüklemede masaüstünde çekmece açık olsun
     setDrawer(!isDesktop() ? false : true);

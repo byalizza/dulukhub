@@ -10,12 +10,12 @@
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dulukhub.com">
 <meta property="og:site_name" content="Dülük Hub">
-<meta name="theme-color" content="#1F5F46">
+<meta name="theme-color" content="#2A7A5A">
 <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg">
 <link rel="apple-touch-icon" href="./assets/favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="./css/style.css">
 <link rel="stylesheet" href="./css/components.css">
 <link rel="stylesheet" href="./css/responsive.css">
@@ -25,9 +25,10 @@
 <div id="splash" class="splash" aria-hidden="true">
     <div class="splash-logo">
         <img src="./assets/logo.svg" alt="" width="46" height="46">
-        <span>DÜLÜK <b>HUB</b></span>
+        <span>Dülük <b>Köyü</b></span>
     </div>
-    <p>Yükleniyor...</p>
+    <p>Köyün dijital buluşma noktası yükleniyor...</p>
+    <div class="splash-spinner"></div>
 </div>
 
 <!-- Kayıt / Giriş kapısı (misafir girişi yok) -->
@@ -35,7 +36,7 @@
     <div class="gate-inner">
         <div class="gate-brand">
             <img src="./assets/logo.svg" alt="" width="52" height="52">
-            <h1>DÜLÜK HUB</h1>
+            <h1>Dülük Köyü</h1>
             <p>Dülük Köyü'nün dijital buluşma noktası</p>
         </div>
         <div id="gateContent"></div>
@@ -49,9 +50,9 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>
         </button>
 
-        <button class="brand" id="brandButton" type="button" aria-label="Dülük Hub — Haberler">
+        <button class="brand" id="brandButton" type="button" aria-label="Dülük Köyü — Haberler">
             <img src="./assets/logo.svg" alt="" width="28" height="28">
-            <span class="brand-text">DÜLÜK <b>HUB</b></span>
+            <span class="brand-text">Dülük <b>Köyü</b></span>
         </button>
 
         <div class="header-actions">
@@ -66,12 +67,14 @@
             <div class="drawer-user" id="drawerUser">
                 <span class="avatar" id="drawerAvatar">G</span>
                 <div>
+                    <span class="drawer-greeting">Hoş geldin,</span>
                     <strong id="drawerName">Kullanıcı</strong>
                     <span id="drawerEmail">hesap@dulukhub.com</span>
                 </div>
             </div>
 
             <div class="drawer-items">
+                <p class="drawer-group-label">Gündem</p>
                 <a href="#/news" data-nav="news">
                     <span class="nav-icon icon-news"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg></span>
                     Haberler
@@ -84,10 +87,8 @@
                     <span class="nav-icon icon-events"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M8 2v4"/><path d="M16 2v4"/><path d="M3 9h18"/><path d="m9 14 2 2 4-4"/></svg></span>
                     Etkinlikler
                 </a>
-                <a href="#/giveaway" data-nav="giveaway">
-                    <span class="nav-icon icon-giveaway"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 4.5 12 7l-3-2.5"/><path d="M12 7v14"/><path d="M2 12h20"/></svg></span>
-                    Çekilişler
-                </a>
+
+                <p class="drawer-group-label">Kültür &amp; Hafıza</p>
                 <a href="#/gallery" data-nav="gallery">
                     <span class="nav-icon icon-gallery"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.5-3.5a2 2 0 0 0-2.8 0L6 20"/></svg></span>
                     Köy Galerisi
@@ -100,6 +101,12 @@
                     <span class="nav-icon icon-heritage"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-4h6v4"/><path d="M10 11h.01"/><path d="M14 11h.01"/><path d="m12 8-.5 1.5L10 10"/><path d="m12 8 .5 1.5L14 10"/></svg></span>
                     Tarihi Eserler
                 </a>
+
+                <p class="drawer-group-label">Hesap</p>
+                <a href="#/giveaway" data-nav="giveaway">
+                    <span class="nav-icon icon-giveaway"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 4.5 12 7l-3-2.5"/><path d="M12 7v14"/><path d="M2 12h20"/></svg></span>
+                    Çekilişler
+                </a>
                 <a href="#/settings" data-nav="settings">
                     <span class="nav-icon icon-settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.55-1 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h.09a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55h.09a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v.09a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.55 1Z"/></svg></span>
                     Ayarlar
@@ -108,14 +115,16 @@
                     <span class="nav-icon icon-profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
                     Profilim
                 </a>
-                <button type="button" class="drawer-admin" id="adminEntry">
-                    <span class="nav-icon icon-admin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
-                    Yönetim
-                </button>
             </div>
 
-            <div class="drawer-footer">
-                <p>DÜLÜK HUB — © 2026 Dülük Köyü</p>
+            <div class="drawer-bottom">
+                <button type="button" class="drawer-logout" id="drawerLogout">
+                    <span class="nav-icon icon-logout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg></span>
+                    Çıkış Yap
+                </button>
+                <div class="drawer-footer">
+                    <p>Dülük Köyü — © 2026 Muhtarlık</p>
+                </div>
             </div>
         </nav>
 
@@ -167,7 +176,31 @@
 
     </div>
 
+    <!-- Alt gezinti çubuğu (mobil) -->
+    <nav class="tab-bar" aria-label="Hızlı erişim">
+        <button type="button" data-nav="news" aria-label="Haberler">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg>
+            Haberler
+        </button>
+        <button type="button" data-nav="events" aria-label="Etkinlikler">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M8 2v4"/><path d="M16 2v4"/><path d="M3 9h18"/><path d="m9 14 2 2 4-4"/></svg>
+            Etkinlikler
+        </button>
+        <button type="button" data-nav="gallery" aria-label="Galeri">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.5-3.5a2 2 0 0 0-2.8 0L6 20"/></svg>
+            Galeri
+        </button>
+        <button type="button" data-nav="profile" aria-label="Profilim">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Profil
+        </button>
+    </nav>
+
 </div>
+
+<button type="button" id="scrollTop" class="scroll-top" aria-label="Yukarı çık">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>
+</button>
 
 <div id="modal-root"></div>
 <div id="toast-root" aria-live="polite" aria-atomic="false"></div>

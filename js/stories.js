@@ -48,7 +48,7 @@ export async function renderStories() {
             el.innerHTML =
                 '<header class="screen-head"><h1>Köy Hikayeleri</h1><p>Nesilden nesile aktarılan hatıralar</p></header>' +
                 '<div class="empty-state">' +
-                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>' +
+                '<span class="empty-emoji">📖</span>' +
                 "<h4>Henüz hikaye yok.</h4><p>İlk hikayeyi büyüklerinizden dinleyip paylaşabilirsiniz.</p></div>";
             return;
         }
@@ -74,9 +74,9 @@ function storyCard(s) {
     const author = s.author || "Köylümüz";
     return (
         '<article class="card story-card">' +
-        '<div class="story-meta" style="margin-bottom:8px">' +
-        '<span class="avatars"><span>' + esc(initials(author)) + "</span></span>" +
-        "<strong style=\"font-size:12.5px\">" + esc(author) + "</strong>" +
+        '<div class="story-meta story-author-line" style="margin-bottom:8px">' +
+        '<span class="story-author-avatar">' + esc(initials(author)) + "</span>" +
+        "<strong>" + esc(author) + "</strong>" +
         "<span>•</span><span>" + fmtDate(s.date) + "</span>" +
         "</div>" +
         "<h3>" + esc(s.title) + "</h3>" +
@@ -84,7 +84,7 @@ function storyCard(s) {
         '<p class="content">' + esc(s.content || "") + "</p>" +
         '<div class="story-meta">' +
         '<button type="button" class="btn btn-sm ' + (liked ? "btn-primary" : "btn-ghost") + '" data-story-id="' + encodeURIComponent(s.id) + '">' +
-        '<svg viewBox="0 0 24 24" fill="' + (liked ? "currentColor" : "none") + '" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.5-1.6 3-3.5 3-5.5A5.5 5.5 0 0 0 12 5.5 5.5 5.5 0 0 0 2 8.5c0 2 1.5 3.9 3 5.5l7 7Z"/></svg>' +
+        '<svg class="heart" viewBox="0 0 24 24" fill="' + (liked ? "currentColor" : "none") + '" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.5-1.6 3-3.5 3-5.5A5.5 5.5 0 0 0 12 5.5 5.5 5.5 0 0 0 2 8.5c0 2 1.5 3.9 3 5.5l7 7Z"/></svg>' +
         (liked ? "Beğendin" : "Beğen") + " (" + esc(Number(s.likes) + (liked ? 1 : 0)) + ")" +
         "</button>" +
         "</div>" +
@@ -102,6 +102,17 @@ function likeStory(id, btn) {
     if (isLiked(s.id)) return;
     markLiked(s.id);
     s.likes = (Number(s.likes) || 0) + 1;
+
+    btn.disabled = true;
+    btn.classList.remove("btn-ghost");
+    btn.classList.add("btn-primary");
+    const heart = btn.querySelector(".heart");
+    if (heart) {
+        heart.setAttribute("fill", "currentColor");
+        heart.classList.add("heart-pop");
+        setTimeout(() => heart.classList.remove("heart-pop"), 700);
+    }
+    const label = btn.childNodes[1];
+    if (label) label.textContent = " Beğendin (" + s.likes + ")";
     toast("Hikayeyi beğendin.");
-    renderStories();
 }

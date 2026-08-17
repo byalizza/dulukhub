@@ -1,6 +1,6 @@
 /* ============================================================
    Dülük Hub — giveaway.js
-   Çekilişler: aktif çekiliş listesi ve katılım butonu.
+   Çekilişler: canlı geri sayım, katılım butonu ve kutlama efekti.
    ============================================================ */
 
 import { $, $$, esc, toast, imgFallback, fmtDate, fmtDateTime, renderError } from "./app.js";
@@ -9,6 +9,7 @@ import { getCurrentUser } from "./auth.js";
 
 let cachedGiveaways = [];
 let joinedSet = new Set();
+let countdownTimer = null;
 
 const JOIN_KEY = "dulukhub-giveaway-joined";
 
@@ -35,6 +36,7 @@ function markJoined(id) {
 
 export async function renderGiveaways() {
     loadJoined();
+    stopCountdown();
     const el = $("#giveawayContent");
     el.innerHTML =
         '<header class="screen-head"><h1>Çekilişler</h1><p>Katıl, şansını dene</p></header>' +
@@ -48,7 +50,7 @@ export async function renderGiveaways() {
             el.innerHTML =
                 '<header class="screen-head"><h1>Çekilişler</h1><p>Katıl, şansını dene</p></header>' +
                 '<div class="empty-state">' +
-                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 4.5 12 7l-3-2.5"/><path d="M12 7v14"/><path d="M2 12h20"/></svg>' +
+                '<span class="empty-emoji">🎁</span>' +
                 "<h4>Şu an aktif çekiliş yok.</h4><p>Yeni çekilişler duyurulduğunda burada görünecek.</p></div>";
             return;
         }
@@ -63,6 +65,8 @@ export async function renderGiveaways() {
             btn.addEventListener("click", () => joinGiveaway(btn.dataset.giveawayId, btn));
         });
         $$("[data-giveaway-img]", el).forEach((img) => imgFallback(img, "Çekiliş görseli"));
+
+        startCountdown(el);
     } catch (err) {
         console.error("Çekilişler yüklenemedi:", err);
         renderError(el, "Çekilişler");
@@ -80,15 +84,59 @@ function giveawayCard(g) {
         '<span class="badge badge-giveaway">' + esc(g.prize || "Hediye") + "</span>" +
         "</div>" +
         '<p class="giveaway-desc">' + esc(g.description || "") + "</p>" +
+        '<div class="giveaway-countdown" data-count="' + encodeURIComponent(g.endDate) + '" role="timer" aria-live="polite">…</div>' +
         '<div class="progress-track"><div class="progress-fill" style="width:' + pct + '%"></div></div>' +
         '<p class="giveaway-stats"><span>' + esc(g.participants) + " kişi katıldı</span><span>" + esc(pct) + "%</span></p>" +
         (joined
-            ? '<button type="button" class="btn btn-block btn-ghost" disabled>Katılımın alındı</button>'
-            : '<button type="button" class="btn btn-block btn-primary" data-giveaway-id="' + encodeURIComponent(g.id) + '">Çekilişe Katıl</button>') +
+            ? '<button type="button" class="btn btn-block btn-ghost" disabled>Katılımın alındı — bol şans!</button>'
+            : '<button type="button" class="btn btn-block btn-accent" data-giveaway-id="' + encodeURIComponent(g.id) + '">' +
+              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>' +
+              "Çekilişe Katıl</button>") +
         '<p class="form-hint" style="text-align:center">Katılım biter: ' + fmtDateTime(g.endDate) + "</p>" +
         "</article>"
     );
 }
+
+/* ---------- Canlı geri sayım ---------- */
+
+function stopCountdown() {
+    if (countdownTimer) {
+        clearInterval(countdownTimer);
+        countdownTimer = null;
+    }
+}
+
+function startCountdown(root) {
+    const els = $$("[data-count]", root);
+    if (!els.length) return;
+
+    const tick = () => {
+        const now = Date.now();
+        els.forEach((el) => {
+            const end = new Date(decodeURIComponent(el.dataset.count)).getTime();
+            el.textContent = formatRemaining(end - now);
+        });
+    };
+
+    tick();
+    countdownTimer = setInterval(tick, 30000);
+}
+
+function formatRemaining(ms) {
+    if (ms <= 0) return "Çekiliş sona erdi";
+    const totalMin = Math.ceil(ms / 60000);
+    const days = Math.floor(totalMin / 1440);
+    const hours = Math.floor((totalMin % 1440) / 60);
+    const minutes = totalMin % 60;
+
+    let text = "Kalan süre: ";
+    if (days > 0) text += days + " gün ";
+    if (hours > 0 || days > 0) text += hours + " saat ";
+    if (days === 0) text += minutes + " dakika";
+    return text.trim();
+}
+
+/* ---------- Katılım + kutlama ---------- */
 
 async function joinGiveaway(id, btn) {
     const g = cachedGiveaways.find((x) => x.id === id);
@@ -102,13 +150,39 @@ async function joinGiveaway(id, btn) {
         await enterGiveaway(g.id);
         g.participants = (Number(g.participants) || 0) + 1;
         markJoined(g.id);
-        renderGiveaways();
+
+        const card = btn.closest(".giveaway-card");
+        if (card) {
+            burstConfetti(card);
+            btn.outerHTML = '<button type="button" class="btn btn-block btn-ghost" disabled>Katılımın alındı — bol şans!</button>';
+            const stats = card.querySelector(".giveaway-stats span");
+            if (stats) stats.textContent = g.participants + " kişi katıldı";
+            const fill = card.querySelector(".progress-fill");
+            if (fill) fill.style.width = Math.min(100, Math.round((g.participants / g.target) * 100)) + "%";
+        }
         toast("Çekilişe katıldın. Bol şans!");
     } catch (err) {
         console.error("Katılım alınamadı:", err);
         toast("Katılım alınamadı. Tekrar dene.", "error");
         btn.disabled = false;
     }
+}
+
+function burstConfetti(card) {
+    const colors = ["#D4A373", "#2A7A5A", "#C0854A", "#7A5AB3", "#E8B45A"];
+    const burst = document.createElement("div");
+    burst.className = "confetti-burst";
+    for (let i = 0; i < 26; i++) {
+        const piece = document.createElement("span");
+        piece.style.setProperty("--x", (Math.random() * 200 - 100) + "px");
+        piece.style.setProperty("--y", (Math.random() * -160 - 40) + "px");
+        piece.style.setProperty("--r", Math.random() * 540 + "deg");
+        piece.style.setProperty("--c", colors[i % colors.length]);
+        piece.style.animationDelay = Math.random() * 0.12 + "s";
+        burst.appendChild(piece);
+    }
+    card.appendChild(burst);
+    setTimeout(() => burst.remove(), 1600);
 }
 
 export function refreshGiveaways() {

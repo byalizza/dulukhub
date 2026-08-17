@@ -22,7 +22,7 @@ export async function renderHeritage() {
             el.innerHTML =
                 '<header class="screen-head"><h1>Tarihi Eserler</h1><p>Köyümüzün kültürel mirası</p></header>' +
                 '<div class="empty-state">' +
-                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-4h6v4"/></svg>' +
+                '<span class="empty-emoji">🏺</span>' +
                 "<h4>Henüz eser listelenmemiş.</h4><p>Tarihi eserlerimiz yakında burada olacak.</p></div>";
             return;
         }

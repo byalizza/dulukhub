@@ -169,6 +169,23 @@ export function renderError(el, name) {
 
 /* ---------- Başlatma ---------- */
 
+function showFatalError(message) {
+    const box = $("#fatalError");
+    if (!box) return;
+    box.textContent = message;
+    box.hidden = false;
+}
+
+window.addEventListener("error", (e) => {
+    console.error("Global hata:", e.error || e.message);
+    showFatalError((e.message || String(e.error)) + "  (konsol: " + (e.filename || "") + ":" + (e.lineno || "") + ")");
+});
+
+window.addEventListener("unhandledrejection", (e) => {
+    console.error("İşlenmemiş hata:", e.reason);
+    showFatalError("İşlenmemiş hata: " + (e.reason && e.reason.message ? e.reason.message : String(e.reason)));
+});
+
 function init() {
     initTheme();
     initAuth();

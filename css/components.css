@@ -1737,6 +1737,23 @@
     to { opacity: 1; transform: translateY(0); }
 }
 
+/* ---------- Global hata bandı ---------- */
+
+.fatal-error {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 400;
+    padding: 12px 16px;
+    background: var(--color-danger);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.5;
+    box-shadow: 0 6px 22px rgba(0, 0, 0, 0.4);
+}
+
 /* ---------- Yükleyici ---------- */
 
 .loader {

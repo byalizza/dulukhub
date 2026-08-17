@@ -46,7 +46,7 @@ export async function renderSocial() {
     el.querySelectorAll(".social-card").forEach((btn) => {
         btn.addEventListener("click", () => {
             const url = SOCIAL_LINKS[btn.dataset.link];
-            if (url) location.href = url;
+            if (url) window.open(url, "_blank", "noopener");
         });
     });
 }

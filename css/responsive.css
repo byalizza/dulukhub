@@ -1,107 +1,73 @@
 /* ============================================================
    Dülük Hub — responsive.css
-   Mobil / tablet / masaüstü düzenleri
+   Mobil / tablet / masaüstü düzenleri + çekmece menü ayarları
    ============================================================ */
 
-/* ---------- Tablet / masaüstü küçük: mobil alt menü ---------- */
+/* ---------- Tablet ve üzeri: çekmece sabit kalır ---------- */
 
-@media (max-width: 900px) {
-    .desktop-nav {
-        display: none;
-    }
-
-    .mobile-nav {
-        display: flex;
-    }
-
-    .main-content {
-        padding-bottom: var(--mobile-nav-height);
-    }
-}
-
-@media (min-width: 901px) {
-    .mobile-nav {
-        display: none;
-    }
-
-    .more-menu {
-        display: none !important;
-    }
-}
-
-/* ---------- Galeri ---------- */
-
-@media (max-width: 1024px) {
-    .photo-grid {
-        grid-template-columns: repeat(3, 1fr);
-    }
-}
-
-@media (max-width: 768px) {
-    .photo-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-    }
-
-    .news-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 14px;
-    }
-
-    .event-list {
-        grid-template-columns: 1fr;
-    }
-
-    .admin-forms {
-        grid-template-columns: 1fr;
-    }
-}
-
-@media (max-width: 520px) {
-    .news-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .home-news {
-        grid-template-columns: 1fr;
-    }
-
-    .mini-events {
-        grid-template-columns: 1fr;
+@media (min-width: 900px) {
+    /* Galeri daha geniş ızgara */
+    .gallery-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 6px;
     }
 
     .screen-inner {
-        padding: 24px 16px 40px;
+        padding: 28px 28px 48px;
+        max-width: 860px;
     }
-}
 
-/* ---------- Ana sayfa mini fotoğraflar ---------- */
-
-@media (max-width: 768px) {
-    .mini-photos {
+    /* Etkinlik listesi iki sütun */
+    .event-list {
+        display: grid;
         grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
     }
 
-    .hero h1 {
-        font-size: 34px;
+    /* Çekiliş / hikâye listeleri iki sütun */
+    .giveaway-list,
+    .story-list {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+        align-items: start;
+    }
+
+    .giveaway-card,
+    .story-card {
+        height: 100%;
+    }
+
+    /* Yönetim formları iki sütun */
+    .admin-forms {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
     }
 }
 
 /* ---------- Küçük telefonlar ---------- */
 
 @media (max-width: 380px) {
-    .hero h1 {
-        font-size: 30px;
+    .gallery-grid {
+        grid-template-columns: repeat(2, 1fr);
     }
 
-    .photo-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 8px;
+    .news-card-cover {
+        flex-basis: 84px;
+        width: 84px;
     }
 
     .btn {
-        padding: 10px 15px;
+        padding: 10px 14px;
     }
+}
+
+/* ---------- Aydınlık ekranlar için modal ---------- */
+
+.modal {
+    max-height: min(86vh, 640px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 /* ---------- Düşük hareket tercihi ---------- */
@@ -116,14 +82,13 @@
     }
 }
 
-/* ---------- Dokunma hedefleri ---------- */
+/* ---------- Dokunma hedefleri (kaba işaretçi) ---------- */
 
 @media (hover: none) and (pointer: coarse) {
-    .mini-news:hover,
-    .event-card:hover,
     .news-card:hover,
-    .photo-item:hover img,
-    .mini-photo:hover img {
+    .event-card:hover,
+    .heritage-card:hover .heritage-cover img,
+    .gallery-item:hover img {
         transform: none;
     }
 }

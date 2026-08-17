@@ -1,37 +1,51 @@
 /* ============================================================
    Dülük Hub — auth.js
-   Giriş / kayıt, profil ve admin yönetimi (haber, fotoğraf,
-   etkinlik, duyuru ekleme / silme).
-   Not: Yetkiler Firestore Security Rules ile korunur; yalnızca
-   UI'da gizlenmesi güvenlik değildir. İlk admin, Firebase
-   konsolundan users/{uid} doc'una role: "admin" eklenerek atanır.
+   Zorunlu kayıt / giriş kapısı (misafir girişi yok), profil,
+   Yönetim kodu (355334) ve admin paneli.
+   Not: Yetkiler Firestore Security Rules ile korunur; UI'daki
+   gizleme güvenlik değildir. İlk admin, Firebase konsolundan
+   users/{uid} doc'una role: "admin" eklenerek atanır.
    ============================================================ */
 
-import { $, $$, esc, toast, initials, fmtDate, openModal } from "./app.js";
+import { $, $$, esc, toast, initials, fmtDate, openModal, closeModal } from "./app.js";
+import { navigateTo } from "./navigation.js";
 import {
     auth,
+    authMode,
     onAuthStateChanged,
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
     signOut,
     updateProfile,
+    saveUserProfile,
+    getUserProfile,
+    demoGetSession,
+    demoSetSession,
     createPost,
     createPhoto,
     createEvent,
     createAnnouncement,
+    createGiveaway,
+    createStory,
+    createHeritageItem,
     deleteItem,
-    saveUserProfile,
-    getUserProfile,
     uploadPhotoFile,
     listPosts,
     listPhotos,
     listEvents,
-    listAnnouncements
+    listAnnouncements,
+    listGiveaways,
+    listStories,
+    listHeritage
 } from "./firebase.js";
+
+const ADMIN_CODE = "355334";
+const ADMIN_SESSION_KEY = "dulukhub-admin-session";
+const DEMO_USERS_KEY = "dulukhub-demo-users";
 
 let currentUser = null;
 let currentProfile = null;
-let adminListsState = null;
+let authModeValue = "demo";
 
 const AUTH_ERRORS = {
     "auth/invalid-email": "Geçersiz e-posta adresi.",
@@ -49,223 +63,446 @@ function errorMessage(err) {
     return AUTH_ERRORS[err && err.code] || "Bir hata oluştu. Tekrar deneyin.";
 }
 
-/* ---------- Oturum ---------- */
+function normalizePhone(raw) {
+    const digits = String(raw || "").replace(/\D/g, "");
+    if (!digits || digits.length < 10) return "";
+    return digits.length === 10 ? "+90" + digits : "+" + digits;
+}
+
+function phoneToEmail(phone) {
+    return "phone" + phone.replace(/\D/g, "") + "@dulukhub.app";
+}
+
+/* ---------- Oturum erişimcileri ---------- */
+
+export function getCurrentUser() {
+    return currentUser;
+}
+
+export function getCurrentProfile() {
+    return currentProfile;
+}
+
+export function isAdminSession() {
+    return localStorage.getItem(ADMIN_SESSION_KEY) === "1" && !!currentProfile && currentProfile.role === "admin";
+}
+
+function setAdminSession(on) {
+    if (on) localStorage.setItem(ADMIN_SESSION_KEY, "1");
+    else localStorage.removeItem(ADMIN_SESSION_KEY);
+}
+
+/* ---------- Oturum başlangıcı ---------- */
 
 export function initAuth() {
-    onAuthStateChanged(auth, async (user) => {
-        currentUser = user;
-        currentProfile = null;
+    const adminEntry = $("#adminEntry");
+    if (adminEntry) adminEntry.addEventListener("click", openAdminCodeModal);
 
-        if (user) {
-            try {
-                currentProfile = await getUserProfile(user.uid);
-            } catch (err) {
-                console.warn("Kullanıcı profili yüklenemedi:", err);
+    authMode().then((mode) => {
+        authModeValue = mode;
+        if (mode === "live") {
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    await loadProfile(user.uid, {
+                        displayName: user.displayName || "",
+                        email: user.email || ""
+                    });
+                } else {
+                    endSession();
+                }
+            });
+        } else {
+            const session = demoGetSession();
+            if (session && session.uid) {
+                loadProfile(session.uid, session);
+            } else {
+                endSession();
             }
-            if (!currentProfile) {
-                currentProfile = {
-                    displayName: user.displayName || "",
-                    username: "",
-                    email: user.email || "",
-                    role: "user"
-                };
-                saveUserProfile(user.uid, {
-                    uid: user.uid,
-                    displayName: currentProfile.displayName,
-                    username: currentProfile.username,
-                    email: user.email,
-                    createdAt: new Date().toISOString(),
-                    role: "user"
-                }).catch((err) => console.warn("Profil oluşturulamadı:", err));
-            }
-        }
-
-        updateHeader();
-
-        const profileScreen = $('.screen[data-screen="profile"]');
-        if (profileScreen && !profileScreen.hidden) {
-            renderProfileScreen();
         }
     });
 }
 
-function updateHeader() {
-    const name = currentUser ? (currentProfile && currentProfile.displayName) || currentUser.email || "?" : null;
-    $("#headerAvatar").textContent = currentUser ? initials(name) : "G";
-    const label = $("#moreProfileLabel");
-    if (label) label.textContent = currentUser ? "Profilim" : "Giriş Yap";
+async function loadProfile(uid, defaults) {
+    currentUser = { uid, email: defaults.email || "", displayName: defaults.displayName || "" };
+    currentProfile = null;
+    try {
+        currentProfile = await getUserProfile(uid);
+    } catch (err) {
+        console.warn("Kullanıcı profili yüklenemedi:", err);
+    }
+    if (!currentProfile) {
+        currentProfile = {
+            uid,
+            username: defaults.displayName || "",
+            displayName: defaults.displayName || "",
+            email: defaults.email || "",
+            phone: defaults.phone || "",
+            role: "user",
+            createdAt: new Date().toISOString()
+        };
+        saveUserProfile(uid, currentProfile).catch(() => {});
+    }
+    startSession();
 }
 
-/* ---------- Profil ekranı ---------- */
-
-export async function renderProfileScreen() {
-    const el = $("#profileContent");
-
-    if (!currentUser) {
-        renderAuthForms(el, false);
-        return;
-    }
-
-    const p = currentProfile || {};
-    const email = (currentUser.email || p.email || "").trim();
-    const displayName = p.displayName && p.displayName.trim() ? p.displayName.trim() : email.split("@")[0];
-
-    el.innerHTML =
-        '<header class="screen-head"><h1>Profil</h1><p>Hesap bilgilerin</p></header>' +
-        '<div class="card profile-card">' +
-        '<div class="profile-avatar" aria-hidden="true">' + esc(initials(displayName)) + "</div>" +
-        "<h2>" + esc(displayName) + "</h2>" +
-        '<p class="email">' + esc(email) + "</p>" +
-        '<ul class="profile-details">' +
-        "<li><span>Katılım</span><strong>" + esc(fmtDate(currentUser.metadata && currentUser.metadata.creationTime)) + "</strong></li>" +
-        (p.username ? "<li><span>Kullanıcı adı</span><strong>@" + esc(p.username) + "</strong></li>" : "") +
-        "</ul>" +
-        '<div class="profile-actions">' +
-        '<button type="button" class="btn btn-ghost" data-profile-action="edit">Profili Düzenle</button>' +
-        '<button type="button" class="btn btn-danger" data-profile-action="logout">Çıkış Yap</button>' +
-        "</div></div>";
-
-    $("[data-profile-action='edit']", el).addEventListener("click", openEditProfileModal);
-    $("[data-profile-action='logout']", el).addEventListener("click", async () => {
-        try {
-            await signOut(auth);
-            toast("Çıkış yapıldı.");
-            location.hash = "#/home";
-        } catch (err) {
-            console.error("Çıkış hatası:", err);
-            toast("Çıkış yapılamadı.", "error");
-        }
-    });
-
-    if (p.role === "admin") {
-        await renderAdminSection(el);
+function startSession() {
+    updateDrawerUser();
+    $("#authGate").hidden = true;
+    $("#app").hidden = false;
+    if (!location.hash || location.hash === "#/" || location.hash === "#/news") {
+        navigateTo("news");
+    } else {
+        navigateTo(parseScreen());
     }
 }
 
-/* ---------- Giriş / kayıt ---------- */
+function endSession() {
+    currentUser = null;
+    currentProfile = null;
+    setAdminSession(false);
+    if (authModeValue === "live" && auth.currentUser) {
+        signOut(auth).catch(() => {});
+    }
+    $("#app").hidden = true;
+    const gate = $("#authGate");
+    gate.hidden = false;
+    renderGate("login");
+    bindGate();
+}
 
-function renderAuthForms(el, isRegister) {
-    el.innerHTML =
+function parseScreen() {
+    const raw = location.hash.replace(/^#\/?/, "").split("/").filter(Boolean)[0] || "news";
+    return ["news", "events", "giveaway", "gallery", "stories", "heritage", "settings", "profile", "admin"].includes(raw) ? raw : "news";
+}
+
+function updateDrawerUser() {
+    const name = currentProfile && (currentProfile.displayName || currentProfile.username)
+        ? currentProfile.displayName || currentProfile.username
+        : (currentUser ? currentUser.email || currentUser.displayName : "");
+    const contact = currentProfile && currentProfile.phone
+        ? currentProfile.phone
+        : (currentUser ? currentUser.email || "" : "");
+
+    $("#drawerAvatar").textContent = initials(name || contact || "G");
+    $("#drawerName").textContent = name || "Kullanıcı";
+    $("#drawerEmail").textContent = contact || "hesap@dulukhub.com";
+}
+
+/* ---------- Kayıt / giriş kapısı ---------- */
+
+function renderGate(mode) {
+    const host = $("#gateContent");
+    const isRegister = mode === "register";
+    const modeVal = gateMode;
+
+    host.innerHTML =
         '<div class="card auth-card">' +
         '<div class="auth-head">' +
-        "<h1>" + (isRegister ? "Hesap Oluştur" : "Giriş Yap") + "</h1>" +
-        "<p>" + (isRegister ? "Dülük Hub'a katıl" : "Dülük Hub'a hoş geldin") + "</p>" +
+        "<h2>" + (isRegister ? "Hesap Oluştur" : "Giriş Yap") + "</h2>" +
+        "<p>" + (isRegister ? "Dülük Hub'a kayıt ol ve köyün dijital hayatına katıl." : "Dülük Hub'a hoş geldin. Devam etmek için giriş yap.") + "</p>" +
+        "</div>" +
+        '<div class="chips gate-tabs">' +
+        '<button type="button" class="chip' + (modeVal === "email" ? " active" : "") + '" data-gate-tab="email">E-posta</button>' +
+        '<button type="button" class="chip' + (modeVal === "phone" ? " active" : "") + '" data-gate-tab="phone">Telefon</button>' +
         "</div>" +
         '<form class="form" id="authForm" novalidate>' +
         (isRegister
-            ? '<div class="field"><label for="afUsername">Kullanıcı adı</label>' +
-              '<input id="afUsername" name="username" maxlength="24" autocomplete="username"></div>'
+            ? '<div class="form-group"><label for="afUsername">Kullanıcı adı *</label>' +
+              '<input id="afUsername" class="form-control" name="username" maxlength="24" autocomplete="username" placeholder="ör. Ali Yılmaz">' +
+              '<p class="form-hint">Köyde nasıl tanınmak istiyorsan öyle yaz.</p></div>'
             : "") +
-        '<div class="field"><label for="afEmail">E-posta</label>' +
-        '<input id="afEmail" name="email" type="email" autocomplete="email" required></div>' +
-        '<div class="field"><label for="afPassword">Şifre</label>' +
-        '<input id="afPassword" name="password" type="password" autocomplete="' + (isRegister ? "new-password" : "current-password") + '" required>' +
-        (isRegister ? '<p class="error" id="afHint" hidden></p>' : "") +
-        "</div>" +
-        '<div class="form-error" id="afError" hidden></div>' +
+        (modeVal === "email"
+            ? '<div class="form-group"><label for="afContact">E-posta *</label>' +
+              '<input id="afContact" class="form-control" name="contact" type="email" autocomplete="email" placeholder="ad@eposta.com"></div>'
+            : '<div class="form-group"><label for="afContact">Telefon *</label>' +
+              '<input id="afContact" class="form-control" name="contact" type="tel" inputmode="tel" autocomplete="tel" placeholder="05XX XXX XX XX"></div>') +
+        '<div class="form-group"><label for="afPassword">Şifre *</label>' +
+        '<input id="afPassword" class="form-control" name="password" type="password" autocomplete="' + (isRegister ? "new-password" : "current-password") + '"></div>' +
+        '<p class="form-error" id="afError" hidden></p>' +
         '<button type="submit" class="btn btn-primary btn-block">' + (isRegister ? "Kayıt Ol" : "Giriş Yap") + "</button>" +
         "</form>" +
-        '<p class="form-alt" style="margin-top:16px">' +
+        '<p class="form-hint" style="margin-top:16px;text-align:center">' +
         (isRegister ? "Zaten hesabın var mı? " : "Hesabın yok mu? ") +
-        '<button type="button" id="afToggle">' + (isRegister ? "Giriş Yap" : "Kayıt Ol") + "</button></p>" +
+        '<button type="button" id="afToggle" class="link-btn">' + (isRegister ? "Giriş Yap" : "Kayıt Ol") + "</button></p>" +
         "</div>";
+}
 
-    const form = $("#authForm", el);
-    form.addEventListener("submit", (e) => {
-        e.preventDefault();
-        submitAuth(isRegister, form);
+let gateMode = "email";
+
+/* ---------- Kapı form davranışı ---------- */
+
+function bindGate() {
+    const host = $("#gateContent");
+
+    $$(".gate-tabs .chip", host).forEach((chip) => {
+        chip.addEventListener("click", () => {
+            gateMode = chip.dataset.gateTab;
+            renderGate($("#afUsername") ? "register" : "login");
+            bindGate();
+        });
     });
 
-    $("#afToggle", el).addEventListener("click", () => {
-        renderAuthForms(el, !isRegister);
+    const toggle = $("#afToggle", host);
+    if (toggle) {
+        toggle.addEventListener("click", () => {
+            renderGate($("#afUsername") ? "login" : "register");
+            bindGate();
+        });
+    }
+
+    const form = $("#authForm", host);
+    if (form) form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        submitAuth($("#afUsername") ? "register" : "login", form);
     });
 }
 
 async function submitAuth(isRegister, form) {
     const errorBox = $("#afError", form);
-
-    const email = form.elements.email.value.trim();
-    const password = form.elements.password.value;
-    const username = form.elements.username ? form.elements.username.value.trim() : "";
-
     errorBox.hidden = true;
 
-    if (!email || !password) {
-        toast("E-posta ve şifre gerekli.", "error");
-        return false;
-    }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        toast("Geçerli bir e-posta adresi girin.", "error");
-        return false;
-    }
-    if (isRegister && password.length < 6) {
-        toast("Şifre en az 6 karakter olmalı.", "error");
-        return false;
+    const username = form.elements.username ? form.elements.username.value.trim() : "";
+    const contact = form.elements.contact.value.trim();
+    const password = form.elements.password.value;
+
+    let email = "";
+    let phone = "";
+    if (gateMode === "email") {
+        email = contact;
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            toast("Geçerli bir e-posta adresi girin.", "error");
+            return;
+        }
+    } else {
+        phone = normalizePhone(contact);
+        if (!phone) {
+            toast("Geçerli bir telefon numarası girin.", "error");
+            return;
+        }
     }
 
-    const submitBtn = form.querySelector('button[type="submit"]');
-    submitBtn.disabled = true;
+    if (isRegister) {
+        if (username.length < 3) {
+            toast("Kullanıcı adı en az 3 karakter olmalı.", "error");
+            return;
+        }
+        if (password.length < 6) {
+            toast("Şifre en az 6 karakter olmalı.", "error");
+            return;
+        }
+    } else if (!password) {
+        toast("Şifre gerekli.", "error");
+        return;
+    }
+
+    const btn = form.querySelector('button[type="submit"]');
+    btn.disabled = true;
 
     try {
-        if (isRegister) {
-            const cred = await createUserWithEmailAndPassword(auth, email, password);
-            const safeUsername = username || email.split("@")[0];
-            await updateProfile(cred.user, { displayName: safeUsername });
-            await saveUserProfile(cred.user.uid, {
-                uid: cred.user.uid,
-                displayName: safeUsername,
-                username: safeUsername,
-                email,
-                createdAt: new Date().toISOString(),
-                role: "user"
-            });
-            toast("Hesabın oluşturuldu. Hoş geldin!");
+        let uid = "";
+        if (authModeValue === "live") {
+            if (isRegister) {
+                const cred = await createUserWithEmailAndPassword(auth, gateMode === "email" ? email : phoneToEmail(phone), password);
+                uid = cred.user.uid;
+                await updateProfile(cred.user, { displayName: username });
+                await saveUserProfile(uid, {
+                    uid,
+                    username,
+                    displayName: username,
+                    email: gateMode === "email" ? email : "",
+                    phone: gateMode === "phone" ? phone : "",
+                    role: "user",
+                    createdAt: new Date().toISOString()
+                });
+            } else {
+                const cred = await signInWithEmailAndPassword(auth, gateMode === "email" ? email : phoneToEmail(phone), password);
+                uid = cred.user.uid;
+            }
         } else {
-            await signInWithEmailAndPassword(auth, email, password);
-            toast("Giriş yapıldı.");
+            const users = readDemoUsers();
+            const key = gateMode === "email" ? email.toLowerCase() : phone;
+            if (isRegister) {
+                if (users[key]) {
+                    toast(gateMode === "email" ? "Bu e-posta zaten kayıtlı." : "Bu telefon zaten kayıtlı.", "error");
+                    btn.disabled = false;
+                    return;
+                }
+                uid = "demo-" + Date.now();
+                const profile = {
+                    uid,
+                    username,
+                    displayName: username,
+                    email: gateMode === "email" ? email : "",
+                    phone: gateMode === "phone" ? phone : "",
+                    role: "user",
+                    createdAt: new Date().toISOString()
+                };
+                users[key] = { ...profile, pass: password };
+                writeDemoUsers(users);
+                saveUserProfile(uid, profile);
+            } else {
+                const found = users[key];
+                if (!found || found.pass !== password) {
+                    toast("Kullanıcı adı / iletişim veya şifre hatalı.", "error");
+                    btn.disabled = false;
+                    return;
+                }
+                uid = found.uid;
+            }
+            demoSetSession({ uid, email: gateMode === "email" ? email : "", phone: gateMode === "phone" ? phone : "", displayName: username || "" });
         }
+
+        if (uid) await loadProfile(uid, { email, phone, displayName: username });
     } catch (err) {
         console.error("Kimlik doğrulama hatası:", err);
         errorBox.textContent = errorMessage(err);
         errorBox.hidden = false;
-        submitBtn.disabled = false;
-        return false;
+        btn.disabled = false;
     }
-    return true;
 }
 
-/* ---------- Profil düzenle ---------- */
+function readDemoUsers() {
+    try {
+        return JSON.parse(localStorage.getItem(DEMO_USERS_KEY)) || {};
+    } catch (err) {
+        return {};
+    }
+}
+
+function writeDemoUsers(users) {
+    try {
+        localStorage.setItem(DEMO_USERS_KEY, JSON.stringify(users));
+    } catch (err) {
+        console.error("Demo kullanıcılar yazılamadı:", err);
+    }
+}
+
+/* ---------- Yönetim kodu (355334) ---------- */
+
+export function openAdminCodeModal() {
+    openModal({
+        title: "Yönetim Girişi",
+        content:
+            '<p class="form-hint">Yönetim paneli için yetki kodunu girin.</p>' +
+            '<div class="form-group"><label for="adminCode">Yetki kodu</label>' +
+            '<input id="adminCode" class="form-control" type="password" inputmode="numeric" maxlength="8" placeholder="••••••" autocomplete="off"></div>' +
+            '<p class="form-error" id="adminCodeError" hidden></p>' +
+            '<button type="button" class="btn btn-primary btn-block" id="adminCodeSubmit">Doğrula</button>'
+    });
+
+    const input = $("#adminCode");
+    const errorBox = $("#adminCodeError");
+    const submit = $("#adminCodeSubmit");
+
+    const verify = () => {
+        const code = input.value.trim();
+        if (code !== ADMIN_CODE) {
+            errorBox.textContent = "Kod hatalı. Tekrar deneyin.";
+            errorBox.hidden = false;
+            input.classList.add("field-error");
+            return;
+        }
+        if (!currentProfile || currentProfile.role !== "admin") {
+            errorBox.textContent = "Bu kod için hesabının yönetici yetkisi yok.";
+            errorBox.hidden = false;
+            return;
+        }
+        setAdminSession(true);
+        toast("Yönetim paneli açıldı.");
+        closeModal();
+        navigateTo("admin");
+    };
+
+    submit.addEventListener("click", verify);
+    input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") verify();
+    });
+    input.focus();
+}
+
+/* ---------- Çıkış ---------- */
+
+export async function logout() {
+    try {
+        if (authModeValue === "live") {
+            await signOut(auth);
+        } else {
+            demoSetSession(null);
+        }
+        toast("Çıkış yapıldı.");
+    } catch (err) {
+        console.error("Çıkış hatası:", err);
+    }
+    endSession();
+}
+
+/* ---------- Profil ekranı ---------- */
+
+export function renderProfileScreen() {
+    const el = $("#profileContent");
+    if (!currentUser || !currentProfile) {
+        el.innerHTML = '<div class="empty-state"><h4>Oturum yok.</h4><p>Lütfen giriş yapın.</p></div>';
+        return;
+    }
+
+    const p = currentProfile;
+    const name = (p.displayName || p.username || currentUser.email || "Kullanıcı").trim();
+    const contact = p.phone || p.email || currentUser.email || "";
+
+    el.innerHTML =
+        '<header class="screen-head"><h1>Profilim</h1><p>Hesap bilgilerin</p></header>' +
+        '<div class="card" style="padding:20px">' +
+        '<div class="profile-head">' +
+        '<span class="avatar">' + esc(initials(name)) + "</span>" +
+        "<div><h2>" + esc(name) + "</h2>" +
+        "<p>" + esc(contact) + (p.role === "admin" ? ' <span class="badge badge-admin">Yönetici</span>' : "") + "</p>" +
+        "</div></div>" +
+        '<ul class="profile-details">' +
+        "<li><span>Kullanıcı adı</span><strong>" + esc((p.username || name).replace(/^@/, "")) + "</strong></li>" +
+        "<li><span>İletişim</span><strong>" + esc(contact || "-") + "</strong></li>" +
+        "<li><span>Katılım</span><strong>" + esc(fmtDate(p.createdAt)) + "</strong></li>" +
+        "</ul>" +
+        '<div class="profile-actions">' +
+        '<button type="button" class="btn btn-ghost" id="editProfileBtn">Profili Düzenle</button>' +
+        '<button type="button" class="btn btn-danger" id="logoutBtn">Çıkış Yap</button>' +
+        "</div></div>";
+
+    $("#editProfileBtn", el).addEventListener("click", openEditProfileModal);
+    $("#logoutBtn", el).addEventListener("click", logout);
+}
+
+/* ---------- Profil düzenleme ---------- */
 
 function openEditProfileModal() {
-    const p = currentProfile || {};
+    if (!currentProfile) return;
+    const p = currentProfile;
+
     openModal({
         title: "Profili Düzenle",
         content:
-            '<form class="form" id="editProfileForm" novalidate>' +
-            '<div class="field"><label for="epName">Ad soyad</label>' +
-            '<input id="epName" maxlength="40" value="' + esc(p.displayName || "") + '"></div>' +
-            '<div class="field"><label for="epUsername">Kullanıcı adı</label>' +
-            '<input id="epUsername" maxlength="24" value="' + esc(p.username || "") + '"></div>' +
-            '<button type="submit" class="btn btn-primary">Kaydet</button>' +
-            "</form>"
+            '<form id="editProfileForm" novalidate>' +
+            '<div class="form-group"><label for="epName">Ad soyad / görünen ad</label>' +
+            '<input id="epName" class="form-control" maxlength="40" value="' + esc(p.displayName || "") + '"></div>' +
+            '<div class="form-group"><label for="epUsername">Kullanıcı adı</label>' +
+            '<input id="epUsername" class="form-control" maxlength="24" value="' + esc(p.username || "") + '"></div>' +
+            '<button type="submit" class="btn btn-primary">Kaydet</button></form>'
     });
 
-    const form = $("#editProfileForm");
-    form.addEventListener("submit", async (e) => {
+    $("#editProfileForm").addEventListener("submit", async (e) => {
         e.preventDefault();
         const displayName = $("#epName").value.trim();
         const username = $("#epUsername").value.trim();
-
         if (!displayName) {
             toast("Ad soyad boş bırakılamaz.", "error");
             return;
         }
-
         try {
-            await updateProfile(auth.currentUser, { displayName });
+            if (authModeValue === "live") {
+                await updateProfile(auth.currentUser, { displayName });
+            }
             await saveUserProfile(currentUser.uid, { displayName, username });
-            currentProfile = { ...(currentProfile || {}), displayName, username };
-            updateHeader();
+            currentProfile = { ...currentProfile, displayName, username };
+            updateDrawerUser();
             renderProfileScreen();
             toast("Profil güncellendi.");
         } catch (err) {
@@ -275,74 +512,100 @@ function openEditProfileModal() {
     });
 }
 
-/* ---------- Admin yönetimi ---------- */
+/* ---------- Yönetim paneli ---------- */
 
-async function renderAdminSection(el) {
-    el.insertAdjacentHTML("beforeend",
-        '<section class="admin-section" id="adminSection">' +
-        '<div class="screen-sub"><h2>Yönetim</h2><p>İçerik ekle ve sil</p></div>' +
+export async function renderAdminPanel() {
+    const el = $("#adminContent");
+
+    if (!isAdminSession()) {
+        el.innerHTML =
+            '<header class="screen-head"><h1>Yönetim</h1><p></p></header>' +
+            '<div class="card" style="padding:24px;text-align:center">' +
+            '<p style="margin:0 0 16px">Yönetim paneli kilitli. Yetki kodu ile giriş yapın.</p>' +
+            '<button type="button" class="btn btn-primary" id="adminEntry2">Yönetim Girişi</button></div>';
+        $("#adminEntry2", el).addEventListener("click", openAdminCodeModal);
+        return;
+    }
+
+    el.innerHTML =
+        '<header class="screen-head"><h1>Yönetim</h1><p>İçerik ekle ve yönet</p></header>' +
         '<div class="admin-forms">' +
-        adminPostForm() + adminPhotoForm() + adminEventForm() + adminAnnounceForm() +
+        adminForm("post", "Haber Ekle", postFields()) +
+        adminForm("photo", "Fotoğraf Ekle", photoFields()) +
+        adminForm("event", "Etkinlik Ekle", eventFields()) +
+        adminForm("giveaway", "Çekiliş Ekle", giveawayFields()) +
+        adminForm("story", "Hikâye Ekle", storyFields()) +
+        adminForm("heritage", "Tarihi Eser Ekle", heritageFields()) +
+        adminForm("announce", "Duyuru Ekle", announceFields()) +
         "</div>" +
-        '<div id="adminLists" style="margin-top:26px"></div>' +
-        "</section>"
-    );
+        '<div style="margin-top:26px" id="adminLists"></div>';
 
     bindAdminForms(el);
     await updateAdminLists();
 }
 
-function adminPostForm() {
+function adminForm(kind, title, fields) {
     return (
-        '<form class="card admin-form" data-admin-form="post" novalidate>' +
-        "<h3>Haber Ekle</h3>" +
-        '<div class="field"><label for="apTitle">Başlık *</label><input id="apTitle" maxlength="150" required></div>' +
-        '<div class="field"><label for="apDesc">Kısa açıklama</label><textarea id="apDesc" maxlength="500"></textarea></div>' +
-        '<div class="field"><label for="apCat">Kategori</label><select id="apCat"><option>Güncel</option><option>Etkinlik</option><option>Köy</option></select></div>' +
-        '<div class="field"><label for="apCover">Görsel bağlantısı</label><input id="apCover" type="url" placeholder="https://..."></div>' +
-        '<div class="field"><label for="apContent">İçerik (her satır bir paragraf)</label><textarea id="apContent" maxlength="8000"></textarea></div>' +
-        '<button type="submit" class="btn btn-primary btn-sm">Haber Ekle</button>' +
-        "</form>"
+        '<form class="card admin-form" data-admin-form="' + kind + '" novalidate>' +
+        "<h3>" + esc(title) + "</h3>" + fields +
+        '<button type="submit" class="btn btn-primary btn-sm">Ekle</button></form>'
     );
 }
 
-function adminPhotoForm() {
-    return (
-        '<form class="card admin-form" data-admin-form="photo" novalidate>' +
-        "<h3>Fotoğraf Ekle</h3>" +
-        '<div class="field"><label for="afTitle">Başlık *</label><input id="afTitle" maxlength="120" required></div>' +
-        '<div class="field"><label for="afDesc">Açıklama</label><textarea id="afDesc" maxlength="300"></textarea></div>' +
-        '<div class="field"><label for="afCat">Kategori</label><select id="afCat"><option>Köy</option><option>Doğa</option><option>Etkinlik</option></select></div>' +
-        '<div class="field"><label for="afFile">Fotoğraf dosyası</label><input id="afFile" type="file" accept="image/*"></div>' +
-        '<div class="field"><label for="afUrl">veya görsel bağlantısı (demo mod)</label><input id="afUrl" type="url" placeholder="https://..."></div>' +
-        '<button type="submit" class="btn btn-primary btn-sm">Fotoğraf Ekle</button>' +
-        "</form>"
-    );
+function postFields() {
+    return ['<div class="form-group"><label for="apTitle">Başlık *</label><input id="apTitle" class="form-control" maxlength="150" required></div>',
+        '<div class="form-group"><label for="apDesc">Kısa açıklama</label><textarea id="apDesc" class="form-control" maxlength="500"></textarea></div>',
+        '<div class="form-group"><label for="apCat">Kategori</label><select id="apCat" class="form-control"><option>Güncel</option><option>Etkinlik</option><option>Köy</option></select></div>',
+        '<div class="form-group"><label for="apCover">Görsel bağlantısı</label><input id="apCover" class="form-control" type="url" placeholder="https://..."></div>',
+        '<div class="form-group"><label for="apContent">İçerik (her satır bir paragraf)</label><textarea id="apContent" class="form-control" maxlength="8000"></textarea></div>'
+    ].join("");
 }
 
-function adminEventForm() {
-    return (
-        '<form class="card admin-form" data-admin-form="event" novalidate>' +
-        "<h3>Etkinlik Ekle</h3>" +
-        '<div class="field"><label for="aeTitle">Etkinlik adı *</label><input id="aeTitle" maxlength="150" required></div>' +
-        '<div class="field"><label for="aeDate">Tarih *</label><input id="aeDate" type="date" required></div>' +
-        '<div class="field"><label for="aeTime">Saat</label><input id="aeTime" type="time"></div>' +
-        '<div class="field"><label for="aeLoc">Konum</label><input id="aeLoc" maxlength="120"></div>' +
-        '<div class="field"><label for="aeDesc">Açıklama</label><textarea id="aeDesc" maxlength="1500"></textarea></div>' +
-        '<button type="submit" class="btn btn-primary btn-sm">Etkinlik Ekle</button>' +
-        "</form>"
-    );
+function photoFields() {
+    return ['<div class="form-group"><label for="afTitle">Başlık *</label><input id="afTitle" class="form-control" maxlength="120" required></div>',
+        '<div class="form-group"><label for="afDesc">Açıklama</label><textarea id="afDesc" class="form-control" maxlength="300"></textarea></div>',
+        '<div class="form-group"><label for="afFile">Fotoğraf dosyası</label><input id="afFile" type="file" accept="image/*"></div>',
+        '<div class="form-group"><label for="afUrl">veya görsel bağlantısı</label><input id="afUrl" class="form-control" type="url" placeholder="https://..."></div>'
+    ].join("");
 }
 
-function adminAnnounceForm() {
-    return (
-        '<form class="card admin-form" data-admin-form="announce" novalidate>' +
-        "<h3>Duyuru Ekle</h3>" +
-        '<div class="field"><label for="anTitle">Duyuru *</label><textarea id="anTitle" maxlength="300" required></textarea></div>' +
-        '<div class="field"><label for="anImportant">Önemli duyuru</label><input id="anImportant" type="checkbox"></div>' +
-        '<button type="submit" class="btn btn-primary btn-sm">Duyuru Ekle</button>' +
-        "</form>"
-    );
+function eventFields() {
+    return ['<div class="form-group"><label for="aeTitle">Etkinlik adı *</label><input id="aeTitle" class="form-control" maxlength="150" required></div>',
+        '<div class="form-group"><label for="aeDate">Tarih *</label><input id="aeDate" class="form-control" type="date" required></div>',
+        '<div class="form-group"><label for="aeTime">Saat</label><input id="aeTime" class="form-control" type="time"></div>',
+        '<div class="form-group"><label for="aeLoc">Konum</label><input id="aeLoc" class="form-control" maxlength="120"></div>',
+        '<div class="form-group"><label for="aeDesc">Açıklama</label><textarea id="aeDesc" class="form-control" maxlength="1500"></textarea></div>'
+    ].join("");
+}
+
+function giveawayFields() {
+    return ['<div class="form-group"><label for="agTitle">Çekiliş adı *</label><input id="agTitle" class="form-control" maxlength="120" required></div>',
+        '<div class="form-group"><label for="agPrize">Ödül *</label><input id="agPrize" class="form-control" maxlength="120" required></div>',
+        '<div class="form-group"><label for="agDesc">Açıklama</label><textarea id="agDesc" class="form-control" maxlength="600"></textarea></div>',
+        '<div class="form-group"><label for="agEnd">Bitiş tarihi *</label><input id="agEnd" class="form-control" type="datetime-local" required></div>',
+        '<div class="form-group"><label for="agTarget">Katılım hedefi</label><input id="agTarget" class="form-control" type="number" min="1" value="50"></div>'
+    ].join("");
+}
+
+function storyFields() {
+    return ['<div class="form-group"><label for="asTitle">Başlık *</label><input id="asTitle" class="form-control" maxlength="120" required></div>',
+        '<div class="form-group"><label for="asContent">Hikâye *</label><textarea id="asContent" class="form-control" maxlength="2000" required></textarea></div>',
+        '<div class="form-group"><label for="asAuthor">Anlatan</label><input id="asAuthor" class="form-control" maxlength="60"></div>'
+    ].join("");
+}
+
+function heritageFields() {
+    return ['<div class="form-group"><label for="ahTitle">Ad *</label><input id="ahTitle" class="form-control" maxlength="120" required></div>',
+        '<div class="form-group"><label for="ahEra">Dönem</label><input id="ahEra" class="form-control" maxlength="60" placeholder="ör. Roma Dönemi"></div>',
+        '<div class="form-group"><label for="ahDesc">Açıklama</label><textarea id="ahDesc" class="form-control" maxlength="800"></textarea></div>',
+        '<div class="form-group"><label for="ahUrl">Görsel bağlantısı</label><input id="ahUrl" class="form-control" type="url" placeholder="https://..."></div>'
+    ].join("");
+}
+
+function announceFields() {
+    return ['<div class="form-group"><label for="anTitle">Duyuru *</label><textarea id="anTitle" class="form-control" maxlength="300" required></textarea></div>',
+        '<div class="form-group" style="display:flex;gap:8px;align-items:center"><input id="anImportant" type="checkbox" style="width:18px;height:18px"><label for="anImportant" style="margin:0">Önemli duyuru</label></div>'
+    ].join("");
 }
 
 function bindAdminForms(el) {
@@ -355,44 +618,30 @@ function bindAdminForms(el) {
 }
 
 async function handleAdminSubmit(form) {
-    const type = form.dataset.adminForm;
+    const kind = form.dataset.adminForm;
     const btn = form.querySelector('button[type="submit"]');
     btn.disabled = true;
+    const uid = currentUser ? currentUser.uid : "admin";
 
     try {
-        if (type === "post") {
+        if (kind === "post") {
             const title = $("#apTitle", form).value.trim();
-            if (!title) {
-                toast("Başlık boş bırakılamaz.", "error");
-                btn.disabled = false;
-                return;
-            }
-            const description = $("#apDesc", form).value.trim();
-            const category = $("#apCat", form).value;
-            const cover = $("#apCover", form).value.trim();
-            const content = $("#apContent", form).value.split("\n").map((l) => l.trim()).filter(Boolean);
+            if (!title) throw new Error("Başlık gerekli");
             await createPost({
                 title,
-                description,
-                category,
-                imageUrl: cover,
-                content,
-                authorId: currentUser.uid,
+                description: $("#apDesc", form).value.trim(),
+                category: $("#apCat", form).value,
+                imageUrl: $("#apCover", form).value.trim(),
+                content: $("#apContent", form).value.split("\n").map((l) => l.trim()).filter(Boolean),
+                authorId: uid,
                 date: new Date().toISOString()
             });
             toast("Haber eklendi.");
-        } else if (type === "photo") {
+        } else if (kind === "photo") {
             const title = $("#afTitle", form).value.trim();
-            if (!title) {
-                toast("Başlık boş bırakılamaz.", "error");
-                btn.disabled = false;
-                return;
-            }
-            const description = $("#afDesc", form).value.trim();
-            const category = $("#afCat", form).value;
+            if (!title) throw new Error("Başlık gerekli");
             const file = $("#afFile", form).files[0];
             const url = $("#afUrl", form).value.trim();
-
             let thumbnailUrl = "";
             let imageUrl = "";
             if (file) {
@@ -401,133 +650,145 @@ async function handleAdminSubmit(form) {
                     thumbnailUrl = urls.thumbnailUrl;
                     imageUrl = urls.imageUrl;
                 } catch (err) {
-                    console.warn("Dosya yüklenemedi, bağlantı deneniyor:", err);
+                    console.warn("Dosya yüklenemedi:", err);
                 }
             }
             if (!imageUrl && url) {
                 thumbnailUrl = url;
                 imageUrl = url;
             }
-            if (!imageUrl) {
-                toast("Fotoğraf dosyası veya görsel bağlantısı girin.", "error");
-                btn.disabled = false;
-                return;
-            }
+            if (!imageUrl) throw new Error("Fotoğraf dosyası veya bağlantı gerekli");
             await createPhoto({
                 title,
-                description,
-                category,
+                description: $("#afDesc", form).value.trim(),
                 thumbnailUrl,
                 imageUrl,
-                authorId: currentUser.uid,
+                authorId: uid,
                 date: new Date().toISOString()
             });
             toast("Fotoğraf eklendi.");
-        } else if (type === "event") {
+        } else if (kind === "event") {
             const title = $("#aeTitle", form).value.trim();
             const date = $("#aeDate", form).value;
-            if (!title) {
-                toast("Etkinlik adı boş bırakılamaz.", "error");
-                btn.disabled = false;
-                return;
-            }
-            if (!date) {
-                toast("Geçerli bir tarih seçin.", "error");
-                btn.disabled = false;
-                return;
-            }
+            if (!title) throw new Error("Etkinlik adı gerekli");
+            if (!date) throw new Error("Tarih gerekli");
             await createEvent({
                 title,
                 date,
                 time: $("#aeTime", form).value,
                 location: $("#aeLoc", form).value.trim(),
                 description: $("#aeDesc", form).value.trim(),
-                authorId: currentUser.uid
+                authorId: uid
             });
             toast("Etkinlik eklendi.");
-        } else if (type === "announce") {
+        } else if (kind === "giveaway") {
+            const title = $("#agTitle", form).value.trim();
+            const prize = $("#agPrize", form).value.trim();
+            const end = $("#agEnd", form).value;
+            if (!title) throw new Error("Çekiliş adı gerekli");
+            if (!prize) throw new Error("Ödül gerekli");
+            if (!end) throw new Error("Bitiş tarihi gerekli");
+            await createGiveaway({
+                title,
+                prize,
+                description: $("#agDesc", form).value.trim(),
+                endDate: new Date(end).toISOString(),
+                target: Number($("#agTarget", form).value) || 50,
+                authorId: uid
+            });
+            toast("Çekiliş eklendi.");
+        } else if (kind === "story") {
+            const title = $("#asTitle", form).value.trim();
+            const content = $("#asContent", form).value.trim();
+            if (!title) throw new Error("Başlık gerekli");
+            if (!content) throw new Error("Hikâye gerekli");
+            await createStory({
+                title,
+                content,
+                author: $("#asAuthor", form).value.trim(),
+                likes: 0,
+                authorId: uid,
+                date: new Date().toISOString()
+            });
+            toast("Hikâye eklendi.");
+        } else if (kind === "heritage") {
+            const title = $("#ahTitle", form).value.trim();
+            if (!title) throw new Error("Ad gerekli");
+            await createHeritageItem({
+                title,
+                era: $("#ahEra", form).value.trim(),
+                description: $("#ahDesc", form).value.trim(),
+                imageUrl: $("#ahUrl", form).value.trim(),
+                authorId: uid,
+                date: new Date().toISOString()
+            });
+            toast("Tarihi eser eklendi.");
+        } else if (kind === "announce") {
             const title = $("#anTitle", form).value.trim();
-            if (!title) {
-                toast("Duyuru boş bırakılamaz.", "error");
-                btn.disabled = false;
-                return;
-            }
+            if (!title) throw new Error("Duyuru gerekli");
             await createAnnouncement({
                 title,
                 important: $("#anImportant", form).checked,
-                date: new Date().toISOString(),
-                authorId: currentUser.uid
+                authorId: uid,
+                date: new Date().toISOString()
             });
             toast("Duyuru yayınlandı.");
         }
         form.reset();
     } catch (err) {
         console.error("İçerik eklenemedi:", err);
-        toast("İçerik eklenemedi.", "error");
+        toast(err.message || "İçerik eklenemedi.", "error");
     }
     btn.disabled = false;
     await updateAdminLists();
 }
 
 async function updateAdminLists() {
-    const listsBox = $("#adminLists");
-    if (!listsBox) return;
+    const box = $("#adminLists");
+    if (!box) return;
 
-    const [posts, photos, events, announcements] = await Promise.allSettled([
+    const [posts, photos, events, giveaways, stories, heritage, announcements] = await Promise.allSettled([
         listPosts(),
         listPhotos(),
         listEvents(),
+        listGiveaways(),
+        listStories(),
+        listHeritage(),
         listAnnouncements()
     ]);
 
-    adminListsState = { posts, photos, events, announcements };
-
     const section = (title, items, kind) => {
         const rows = items.length
-            ? items.slice(0, 6).map((it) => {
-                const name = it.title || "";
-                const date = it.date || it.eventDate || "";
-                return (
-                    '<li style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--color-border)">' +
-                    "<span style=\"flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap\">" + esc(name) + " <small style=\"color:var(--color-muted)\">" + esc(fmtDate(date)) + "</small></span>" +
-                    '<button type="button" class="btn btn-danger btn-sm" data-delete="' + kind + '" data-id="' + encodeURIComponent(it.id) + '">Sil</button>' +
-                    "</li>"
-                );
-            }).join("")
-            : "<li style=\"padding:8px 0;color:var(--color-muted)\">Henüz içerik yok.</li>";
-        return (
-            '<div class="card" style="padding:14px 18px;margin-bottom:14px">' +
-            "<h3 style=\"margin:0 0 8px;font-size:15px\">" + esc(title) + "</h3><ul style=\"list-style:none;margin:0;padding:0\">" + rows + "</ul></div>"
-        );
+            ? items.slice(0, 8).map((it) =>
+                '<li><span>' + esc(it.title || "") +
+                ' <small style="color:var(--color-muted)">' + esc(fmtDate(it.date || it.endDate || "")) + "</small></span>" +
+                '<button type="button" class="btn btn-danger btn-sm" data-delete="' + kind + '" data-id="' + encodeURIComponent(it.id) + '">Sil</button></li>'
+            ).join("")
+            : '<li style="color:var(--color-muted)">Henüz içerik yok.</li>';
+        return '<div class="card admin-list"><h3>' + esc(title) + '</h3><ul>' + rows + "</ul></div>";
     };
 
-    listsBox.innerHTML =
+    box.innerHTML =
         section("Haberler", posts.status === "fulfilled" ? posts.value : [], "posts") +
         section("Fotoğraflar", photos.status === "fulfilled" ? photos.value : [], "photos") +
         section("Etkinlikler", events.status === "fulfilled" ? events.value : [], "events") +
+        section("Çekilişler", giveaways.status === "fulfilled" ? giveaways.value : [], "giveaways") +
+        section("Hikâyeler", stories.status === "fulfilled" ? stories.value : [], "stories") +
+        section("Tarihi Eserler", heritage.status === "fulfilled" ? heritage.value : [], "heritage") +
         section("Duyurular", announcements.status === "fulfilled" ? announcements.value : [], "announcements") +
-        '<p style="font-size:12.5px;color:var(--color-muted)">Silme işlemi yalnızca yetkili admin hesaplarıyla gerçekleşir (Firebase Security Rules).</p>';
+        '<p style="font-size:12.5px;color:var(--color-muted);margin-top:6px">Silme işlemi yetkili yönetici hesaplarıyla gerçekleşir (Firebase Security Rules).</p>';
 
-    $$("[data-delete]", listsBox).forEach((btn) => {
-        btn.addEventListener("click", () => {
-            const kind = btn.dataset.delete;
-            const id = decodeURIComponent(btn.dataset.id);
-            removeItem(kind, id);
-        });
+    $$("[data-delete]", box).forEach((btn) => {
+        btn.addEventListener("click", () => removeItem(btn.dataset.delete, decodeURIComponent(btn.dataset.id)));
     });
 }
 
 async function removeItem(kind, id) {
-    const msg = "Bu öğe kalıcı olarak silinsin mi?";
-    if (!window.confirm(msg)) return;
+    if (!window.confirm("Bu öğe kalıcı olarak silinsin mi?")) return;
     try {
         await deleteItem(kind, id);
         toast("Öğe silindi.");
         await updateAdminLists();
-        const screen = $('.screen:not([hidden]) .screen-inner');
-        if (screen && (kind === "photos" || kind === "posts")) {
-            // Görüntülenen liste varsa yenile
-        }
     } catch (err) {
         console.error("Öğe silinemedi:", err);
         toast("Öğe silinemedi.", "error");

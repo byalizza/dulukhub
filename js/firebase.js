@@ -1,13 +1,13 @@
 ﻿/* ============================================================
-   DÃ¼lÃ¼k Hub â€” firebase.js
+   Dülük Hub — firebase.js
    Firebase kurulumu (config, auth, firestore, storage) ve
-   veri servisi. Firestore eriÅŸilemiyorsa otomatik "demo moda"
-   geÃ§ilir: demo iÃ§erik + localStorage yedekleri kullanÄ±lÄ±r.
+   veri servisi. Firestore erişilemiyorsa otomatik "demo moda"
+   geçilir: demo içerik + localStorage yedekleri kullanılır.
    ============================================================ */
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-analytics.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
+import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
 export { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
 export { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
 import {
@@ -15,15 +15,16 @@ import {
     collection,
     query,
     orderBy,
-    where,
     limit,
     getDocs,
+    getDoc,
     addDoc,
     setDoc,
     doc,
     updateDoc,
     deleteDoc,
-    serverTimestamp
+    serverTimestamp,
+    increment
 } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
 import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-storage.js";
 
@@ -45,7 +46,7 @@ const app = initializeApp(firebaseConfig);
 try {
     getAnalytics(app);
 } catch (err) {
-    console.warn("Analytics baÅŸlatÄ±lamadÄ±:", err);
+    console.warn("Analytics başlatılamadı:", err);
 }
 
 export const auth = getAuth(app);
@@ -54,7 +55,7 @@ export const storage = getStorage(app);
 
 /* ---------- Demo mod tespiti ---------- */
 
-let live = null; // null: henÃ¼z bilinmiyor
+let live = null; // null: henüz bilinmiyor
 
 async function isLive() {
     if (live !== null) return live;
@@ -62,7 +63,7 @@ async function isLive() {
         await getDocs(query(collection(db, "posts"), limit(1)));
         live = true;
     } catch (err) {
-        console.warn("Firestore eriÅŸilemedi, demo mod kullanÄ±lacak:", err);
+        console.warn("Firestore erişilemedi, demo mod kullanılacak:", err);
         live = false;
     }
     return live;
@@ -76,7 +77,7 @@ function readLocal() {
     try {
         return JSON.parse(localStorage.getItem(LOCAL_KEY)) || {};
     } catch (err) {
-        console.error("Yerel veri okunamadÄ±:", err);
+        console.error("Yerel veri okunamadı:", err);
         return {};
     }
 }
@@ -85,15 +86,18 @@ function writeLocal(merged) {
     try {
         localStorage.setItem(LOCAL_KEY, JSON.stringify(merged));
     } catch (err) {
-        console.error("Yerel veri yazÄ±lamadÄ±:", err);
+        console.error("Yerel veri yazılamadı:", err);
     }
 }
 
 const COLLECTIONS = {
-    posts: { demo: "posts", filter: null },
-    photos: { demo: "photos", filter: null },
-    events: { demo: "events", filter: null },
-    announcements: { demo: "announcements", filter: null }
+    posts: { demo: "posts" },
+    photos: { demo: "photos" },
+    events: { demo: "events" },
+    announcements: { demo: "announcements" },
+    giveaways: { demo: "giveaways" },
+    stories: { demo: "stories" },
+    heritage: { demo: "heritage" }
 };
 
 function getDemoList(name) {
@@ -105,8 +109,8 @@ function getDemoList(name) {
 
 function sortByDateAsc(list) {
     return [...list].sort((a, b) => {
-        const da = new Date(a.date || a.eventDate || 0).getTime();
-        const dbx = new Date(b.date || b.eventDate || 0).getTime();
+        const da = new Date(a.date || a.eventDate || a.endDate || 0).getTime();
+        const dbx = new Date(b.date || b.eventDate || b.endDate || 0).getTime();
         return da - dbx;
     });
 }
@@ -144,6 +148,31 @@ export async function listAnnouncements() {
         return snap.docs.map(announceToItem);
     }
     return [...getDemoList("announcements")].sort((a, b) => new Date(b.date) - new Date(a.date));
+}
+
+export async function listGiveaways() {
+    if (await isLive()) {
+        const snap = await getDocs(query(collection(db, "giveaways"), orderBy("endDate", "asc"), limit(40)));
+        return snap.docs.map(giveawayToItem).filter((g) => new Date(g.endDate) >= Date.now());
+    }
+    const active = getDemoList("giveaways").filter((g) => new Date(g.endDate) >= Date.now());
+    return sortByDateAsc(active);
+}
+
+export async function listStories() {
+    if (await isLive()) {
+        const snap = await getDocs(query(collection(db, "stories"), orderBy("date", "desc"), limit(40)));
+        return snap.docs.map(storyToItem);
+    }
+    return [...getDemoList("stories")].sort((a, b) => new Date(b.date) - new Date(a.date));
+}
+
+export async function listHeritage() {
+    if (await isLive()) {
+        const snap = await getDocs(query(collection(db, "heritage"), orderBy("date", "desc"), limit(40)));
+        return snap.docs.map(heritageToItem);
+    }
+    return [...getDemoList("heritage")].sort((a, b) => new Date(b.date) - new Date(a.date));
 }
 
 /* ---------- Yazma (admin) ---------- */
@@ -188,6 +217,34 @@ export function createAnnouncement(data) {
     return writeLiveOrLocal("announcements", data);
 }
 
+export function createGiveaway(data) {
+    return writeLiveOrLocal("giveaways", { ...data, participants: Number(data.participants) || 0 });
+}
+
+export function createStory(data) {
+    return writeLiveOrLocal("stories", data);
+}
+
+export function createHeritageItem(data) {
+    return writeLiveOrLocal("heritage", data);
+}
+
+/* --- Çekilişe katılma --- */
+
+export async function enterGiveaway(id) {
+    if (await isLive()) {
+        await updateDoc(doc(db, "giveaways", id), { participants: increment(1) });
+        return true;
+    }
+    const local = readLocal();
+    const list = local.giveaways || [];
+    const item = list.find((x) => x.id === id);
+    if (item) item.participants = (Number(item.participants) || 0) + 1;
+    local.giveaways = list;
+    writeLocal(local);
+    return true;
+}
+
 export async function deleteItem(name, id) {
     if (await isLive()) {
         await deleteDoc(doc(db, name, id));
@@ -215,10 +272,10 @@ export async function saveUserProfile(uid, data) {
 export async function getUserProfile(uid) {
     if (await isLive()) {
         try {
-            const snap = await getDocs(query(collection(db, "users"), where("uid", "==", uid), limit(1)));
-            if (!snap.empty) return snap.docs[0].data();
+            const snap = await getDoc(doc(db, "users", uid));
+            if (snap.exists()) return snap.data();
         } catch (err) {
-            console.warn("KullanÄ±cÄ± profili okunamadÄ±:", err);
+            console.warn("Kullanıcı profili okunamadı:", err);
         }
         return null;
     }
@@ -226,7 +283,32 @@ export async function getUserProfile(uid) {
     return (local.users || {})[uid] || null;
 }
 
-/* ---------- Storage (fotoÄŸraf yÃ¼kleme) ---------- */
+export async function authMode() {
+    return (await isLive()) ? "live" : "demo";
+}
+
+/* ---------- Demo oturum (Firebase Auth yoksa) ---------- */
+
+const SESSION_KEY = "dulukhub-session";
+
+export function demoGetSession() {
+    try {
+        return JSON.parse(localStorage.getItem(SESSION_KEY)) || null;
+    } catch (err) {
+        return null;
+    }
+}
+
+export function demoSetSession(session) {
+    try {
+        if (session) localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+        else localStorage.removeItem(SESSION_KEY);
+    } catch (err) {
+        console.error("Oturum kaydedilemedi:", err);
+    }
+}
+
+/* ---------- Storage (fotoğraf yükleme) ---------- */
 
 export async function uploadPhotoFile(file, onProgress) {
     if (await isLive()) {
@@ -258,7 +340,7 @@ export async function deletePhoto(name, thumbUrl, fullUrl) {
     return deleteItem("photos", name);
 }
 
-/* ---------- GÃ¶rsel sÄ±kÄ±ÅŸtÄ±rma (client-side) ---------- */
+/* ---------- Görsel sıkıştırma (client-side) ---------- */
 
 function compressImage(file, maxDim, quality) {
     return new Promise((resolve, reject) => {
@@ -277,7 +359,7 @@ function compressImage(file, maxDim, quality) {
                 const ctx = canvas.getContext("2d");
                 ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
                 canvas.toBlob(
-                    (blob) => (blob ? resolve(blob) : reject(new Error("SÄ±kÄ±ÅŸtÄ±rma baÅŸarÄ±sÄ±z"))),
+                    (blob) => (blob ? resolve(blob) : reject(new Error("Sıkıştırma başarısız"))),
                     "image/jpeg",
                     quality
                 );
@@ -290,7 +372,7 @@ function compressImage(file, maxDim, quality) {
     });
 }
 
-/* ---------- Firestore dÃ¶nÃ¼ÅŸÃ¼mleri ---------- */
+/* ---------- Firestore dönüşümleri ---------- */
 
 function postToItem(doc) {
     const d = doc.data();
@@ -298,8 +380,8 @@ function postToItem(doc) {
         id: doc.id,
         title: d.title || "",
         description: d.description || "",
-        category: d.category || "GÃ¼ncel",
-        date: (d.createdAt && d.createdAt.toDate ? d.createdAt.toDate().toISOString() : new Date().toISOString()),
+        category: d.category || "Güncel",
+        date: toISO(d.createdAt) || new Date().toISOString(),
         cover: d.imageUrl || "",
         content: d.content || []
     };
@@ -312,7 +394,7 @@ function photoToItem(doc) {
         title: d.title || "",
         description: d.description || "",
         category: d.category || "",
-        date: (d.createdAt && d.createdAt.toDate ? d.createdAt.toDate().toISOString() : new Date().toISOString()),
+        date: toISO(d.createdAt) || new Date().toISOString(),
         thumbs: d.thumbnailUrl || "",
         full: d.imageUrl || ""
     };
@@ -335,7 +417,51 @@ function announceToItem(doc) {
     return {
         id: doc.id,
         title: d.title || "",
-        date: (d.date && d.date.toDate ? d.date.toDate().toISOString() : new Date().toISOString()),
+        date: toISO(d.date || d.createdAt) || new Date().toISOString(),
         important: !!d.important
     };
+}
+
+function giveawayToItem(doc) {
+    const d = doc.data();
+    return {
+        id: doc.id,
+        title: d.title || "",
+        description: d.description || "",
+        prize: d.prize || "",
+        endDate: toISO(d.endDate) || d.endDate || new Date().toISOString(),
+        participants: Number(d.participants) || 0,
+        target: Number(d.target) || 1
+    };
+}
+
+function storyToItem(doc) {
+    const d = doc.data();
+    return {
+        id: doc.id,
+        title: d.title || "",
+        content: d.content || "",
+        author: d.author || "",
+        likes: Number(d.likes) || 0,
+        date: toISO(d.date || d.createdAt) || new Date().toISOString()
+    };
+}
+
+function heritageToItem(doc) {
+    const d = doc.data();
+    return {
+        id: doc.id,
+        title: d.title || "",
+        era: d.era || "",
+        description: d.description || "",
+        imageUrl: d.imageUrl || "",
+        date: toISO(d.date || d.createdAt) || new Date().toISOString()
+    };
+}
+
+function toISO(value) {
+    if (!value) return null;
+    if (value && typeof value.toDate === "function") return value.toDate().toISOString();
+    if (typeof value === "string") return value;
+    return null;
 }

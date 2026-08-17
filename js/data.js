@@ -163,5 +163,93 @@ export const DEMO = {
             date: "2026-08-12T09:00:00.000Z",
             important: false
         }
+    ],
+
+    giveaways: [
+        {
+            id: "demo-giveaway-1",
+            title: "Buğday Hasadı Çekilişi",
+            description: "Üç şanslı aileye yarım ton doğal buğday hediye! Katılım için yalnızca köy sakinlerinin ayrılması yeterli.",
+            prize: "Yarım ton buğday",
+            endDate: "2026-09-10T20:00:00.000Z",
+            participants: 34,
+            target: 60
+        },
+        {
+            id: "demo-giveaway-2",
+            title: "Bağ Bozumu Şenliği Sürpriz Çekilişi",
+            description: "Şenlik günü sahne önünde yapılacak çekilişte geleneksel yöresel sepet hediye edilecek.",
+            prize: "Yöresel sepet",
+            endDate: "2026-09-12T16:00:00.000Z",
+            participants: 18,
+            target: 40
+        },
+        {
+            id: "demo-giveaway-3",
+            title: "Çocuklar İçin Okul Seti Çekilişi",
+            description: "Okul dönemi öncesi çocuklarımız için kırtasiye seti çekilişi düzenliyoruz.",
+            prize: "Okul kırtasiye seti",
+            endDate: "2026-09-01T10:00:00.000Z",
+            participants: 52,
+            target: 50
+        }
+    ],
+
+    stories: [
+        {
+            id: "demo-story-1",
+            title: "Eski Köy Değirmeni",
+            content: "Köyümüzün doğusundaki tarihi su değirmeni, yıllarca tüm köyün ununu öğüttü. Babalarımız anlatır: Sabahın ilk ışığıyla değirmen taşı dönmeye başlar, suyun sesi köyün uyanış çanı gibiydi. Değirmenin son sahibi Hüseyin Amca, ununu kimseden esirgemez, borcunu ödeyemeyenin gönlünü alırdı.",
+            author: "Mehmet K.",
+            likes: 24,
+            date: "2026-08-10T10:00:00.000Z"
+        },
+        {
+            id: "demo-story-2",
+            title: "Çınarın Gölgesinde Nikâh",
+            content: "Meydandaki çınarın altında üç kuşaktır nikâh kıyılır. Derler ki çınar, gelinlerin duasını yapraklarında saklar. Geçen yaz, yetmiş yıl önce aynı çınarın altında nikâhlanan Halil Dede ile Hatice Nine'nin el ele tutuşan fotoğrafı köyde viral oldu.",
+            author: "Zeynep T.",
+            likes: 41,
+            date: "2026-08-08T09:00:00.000Z"
+        },
+        {
+            id: "demo-story-3",
+            title: "Su Yolu Efsanesi",
+            content: "Büyüklerimizin anlattığına göre köyümüzün su yolu, asırlar önce taş ustası bir usta tarafından tek başına yapılmış. Usta, her taşı oğlunun adıyla mühürlemiş. Bugün bile o mühürleri taşların arasında bulabilirsiniz.",
+            author: "Ali R.",
+            likes: 17,
+            date: "2026-08-05T14:00:00.000Z"
+        }
+    ],
+
+    heritage: [
+        {
+            id: "demo-heritage-1",
+            title: "Köy Değirmeni Kalıntıları",
+            era: "Osmanlı Dönemi",
+            description: "Köyün doğusundaki dere kenarında yer alan değirmen kalıntıları, bölgenin tarım geçmişinin en önemli izlerinden biridir. Değirmen taşı hâlâ yerinde durmaktadır.",
+            imageUrl: img("demirmen") + "/1200/750"
+        },
+        {
+            id: "demo-heritage-2",
+            title: "Tarihi Köy Çeşmesi",
+            era: "Cumhuriyet Dönemi",
+            description: "Meydandaki çeşme, 1930'larda köy halkının ortak emeğiyle inşa edilmiştir. Kitabesindeki yazı, 'Su gibi aziz ol' duasıyla başlar.",
+            imageUrl: img("tcesme") + "/1200/750"
+        },
+        {
+            id: "demo-heritage-3",
+            title: "Antik Dülük Mağaraları",
+            era: "Roma Dönemi",
+            description: "Köyün kuzey yamaçlarındaki kaya mağaraları, Roma döneminde yerleşim ve atölye olarak kullanılmıştır. Duvarlardaki nişler ve merdiven izleri hâlâ görülebilmektedir.",
+            imageUrl: img("magara") + "/1200/750"
+        },
+        {
+            id: "demo-heritage-4",
+            title: "Eski Mezarlık Kapısı",
+            era: "Cumhuriyet Dönemi",
+            description: "Köy mezarlığının taş kapısı, yöresel taş işçiliğinin güzel bir örneğidir. Kapı kemerindeki el oyması süslemeler 1940'lı yıllara aittir.",
+            imageUrl: img("mezarlik") + "/1200/750"
+        }
     ]
 };

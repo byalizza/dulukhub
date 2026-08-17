@@ -1,42 +1,48 @@
 /* ============================================================
    Dülük Hub — navigation.js
-   Merkezi ekran yöneticisi ve hash tabanlı SPA yönlendirme.
-   Aktif olmayan ekranlar DOM'dan gizlenir; içerik yalnızca
-   ekran görüntüleneceğinde yüklenir.
+   Merkezi ekran yöneticisi, hash tabanlı SPA yönlendirme ve
+   sol çekmece menü kontrolü.
    ============================================================ */
 
 import { $, $$, renderError } from "./app.js";
-import { renderHome, renderAnnouncements } from "./app.js";
 import { renderNewsList, renderNewsDetail } from "./news.js";
 import { renderGallery, openPhoto } from "./gallery.js";
 import { renderEvents, openEventModal } from "./events.js";
-import { renderProfileScreen } from "./auth.js";
+import { renderGiveaways } from "./giveaway.js";
+import { renderStories } from "./stories.js";
+import { renderHeritage } from "./heritage.js";
+import { renderSettings } from "./settings.js";
+import { renderProfileScreen, renderAdminPanel } from "./auth.js";
 
 const TITLES = {
-    home: "Dülük Hub — Dülük Köyü",
     news: "Haberler — Dülük Hub",
-    gallery: "Galeri — Dülük Hub",
     events: "Etkinlikler — Dülük Hub",
-    announcements: "Duyurular — Dülük Hub",
-    about: "Hakkımızda — Dülük Hub",
-    profile: "Profil — Dülük Hub"
+    giveaway: "Çekilişler — Dülük Hub",
+    gallery: "Köy Galerisi — Dülük Hub",
+    stories: "Köy Hikayeleri — Dülük Hub",
+    heritage: "Tarihi Eserler — Dülük Hub",
+    settings: "Ayarlar — Dülük Hub",
+    profile: "Profil — Dülük Hub",
+    admin: "Yönetim — Dülük Hub"
 };
 
 const LOADERS = {
-    home: () => renderHome(),
     news: (params) => (params ? renderNewsDetail(params) : renderNewsList()),
-    gallery: () => renderGallery(),
     events: () => renderEvents(),
-    announcements: () => renderAnnouncements(),
-    about: () => null,
-    profile: () => renderProfileScreen()
+    giveaway: () => renderGiveaways(),
+    gallery: () => renderGallery(),
+    stories: () => renderStories(),
+    heritage: () => renderHeritage(),
+    settings: () => renderSettings(),
+    profile: () => renderProfileScreen(),
+    admin: () => renderAdminPanel()
 };
 
 function parseHash() {
     const raw = location.hash.replace(/^#\/?/, "");
     const parts = raw.split("/").filter(Boolean);
     return {
-        screen: parts[0] || "home",
+        screen: parts[0] || "news",
         param: parts[1] ? decodeURIComponent(parts[1]) : null
     };
 }
@@ -46,7 +52,7 @@ async function router() {
     const target = $(`.screen[data-screen="${screen}"]`);
 
     if (!target) {
-        navigateTo("home");
+        navigateTo("news");
         return;
     }
 
@@ -66,12 +72,12 @@ async function router() {
         }
     });
 
-    document.title = TITLES[screen] || TITLES.home;
+    document.title = TITLES[screen] || TITLES.news;
 
     const main = $("#main-content");
     if (main) main.focus({ preventScroll: true });
 
-    closeMoreMenu();
+    closeDrawer();
 
     const loader = LOADERS[screen];
     if (!loader) return;
@@ -94,55 +100,85 @@ export function navigateTo(screen, param) {
     }
 }
 
-/* ---------- Mobil "Daha" menüsü ---------- */
+/* ---------- Çekmece menü ---------- */
 
-function initMoreMenu() {
-    const moreBtn = $("#moreButton");
-    const moreMenu = $("#moreMenu");
-    if (!moreBtn || !moreMenu) return;
+function isDesktop() {
+    return window.matchMedia("(min-width: 900px)").matches;
+}
 
-    moreBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        toggleMoreMenu(moreMenu.hidden);
-    });
+function isDrawerOpen() {
+    const drawer = $("#drawer");
+    if (!drawer) return true;
+    return isDesktop() ? !drawer.classList.contains("closed") : drawer.classList.contains("open");
+}
 
-    document.addEventListener("click", (e) => {
-        if (moreMenu.hidden) return;
-        if (!moreMenu.contains(e.target) && e.target !== moreBtn) toggleMoreMenu(false);
+function setDrawer(open) {
+    const drawer = $("#drawer");
+    const scrim = $("#drawerScrim");
+    const btn = $("#menuButton");
+    if (!drawer) return;
+
+    if (isDesktop()) {
+        drawer.classList.toggle("closed", !open);
+        if (scrim) scrim.hidden = true;
+    } else {
+        drawer.classList.toggle("open", open);
+        if (scrim) scrim.hidden = !open;
+    }
+    if (btn) btn.setAttribute("aria-expanded", String(open));
+}
+
+export function toggleDrawer() {
+    setDrawer(!isDrawerOpen());
+}
+
+export function closeDrawer() {
+    if (!isDesktop()) setDrawer(false);
+}
+
+function initDrawer() {
+    const btn = $("#menuButton");
+    const scrim = $("#drawerScrim");
+
+    if (btn) {
+        btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            toggleDrawer();
+        });
+    }
+    if (scrim) {
+        scrim.addEventListener("click", () => closeDrawer());
+    }
+
+    $$("#drawer a[data-nav], #drawer button").forEach((item) => {
+        item.addEventListener("click", () => {
+            if (!isDesktop()) closeDrawer();
+        });
     });
 
     document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") toggleMoreMenu(false);
+        if (e.key === "Escape" && isDrawerOpen() && !isDesktop()) closeDrawer();
     });
 
-    moreMenu.querySelectorAll("a, button").forEach((item) => {
-        item.addEventListener("click", () => toggleMoreMenu(false));
+    window.addEventListener("resize", () => {
+        setDrawer(isDesktop() ? true : false);
     });
-}
 
-function toggleMoreMenu(open) {
-    const moreBtn = $("#moreButton");
-    const moreMenu = $("#moreMenu");
-    moreMenu.hidden = !open;
-    moreBtn.setAttribute("aria-expanded", open ? "true" : "false");
-    if (open) {
-        const first = moreMenu.querySelector("a, button");
-        if (first) first.focus();
-    }
-}
-
-function closeMoreMenu() {
-    const moreMenu = $("#moreMenu");
-    if (moreMenu && !moreMenu.hidden) toggleMoreMenu(false);
+    const brandBtn = $("#brandButton");
+    if (brandBtn) brandBtn.addEventListener("click", () => navigateTo("news"));
 }
 
 /* ---------- Başlatma ---------- */
 
 export function initRouter() {
+    initDrawer();
+
+    // İlk yüklemede masaüstünde çekmece açık olsun
+    setDrawer(!isDesktop() ? false : true);
+
     window.addEventListener("hashchange", router);
-    initMoreMenu();
     if (!location.hash) {
-        location.hash = "#/home";
+        location.hash = "#/news";
     } else {
         router();
     }

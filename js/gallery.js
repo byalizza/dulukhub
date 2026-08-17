@@ -1,6 +1,6 @@
 /* ============================================================
    Dülük Hub — gallery.js
-   Galeri: lazy-load ızgarası ve lightbox (klavye destekli).
+   Galeri: kare lazy-load ızgarası ve lightbox (klavye destekli).
    ============================================================ */
 
 import { $, $$, esc, fmtDate, imgFallback, openModal, renderError } from "./app.js";
@@ -11,9 +11,9 @@ let cachedPhotos = [];
 export async function renderGallery() {
     const el = $("#galleryContent");
     el.innerHTML =
-        '<header class="screen-head"><h1>Galeri</h1><p>Köyümüzden kareler</p></header>' +
-        '<div class="photo-grid skeleton-grid">' +
-        '<div class="skeleton" style="aspect-ratio:4/3;border-radius:12px"></div>'.repeat(8) +
+        '<header class="screen-head"><h1>Köy Galerisi</h1><p>Köyümüzden kareler</p></header>' +
+        '<div class="gallery-grid">' +
+        '<div class="skeleton" style="aspect-ratio:1/1;border-radius:0"></div>'.repeat(8) +
         "</div>";
 
     try {
@@ -21,26 +21,26 @@ export async function renderGallery() {
 
         if (!cachedPhotos.length) {
             el.innerHTML =
-                '<header class="screen-head"><h1>Galeri</h1><p>Köyümüzden kareler</p></header>' +
+                '<header class="screen-head"><h1>Köy Galerisi</h1><p>Köyümüzden kareler</p></header>' +
                 '<div class="empty-state">' +
                 '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.5-3.5a2 2 0 0 0-2.8 0L6 20"/></svg>' +
-                "<h3>Henüz fotoğraf yok.</h3><p>İlk fotoğraflar yakında burada olacak.</p></div>";
+                "<h4>Henüz fotoğraf yok.</h4><p>İlk fotoğraflar yakında burada olacak.</p></div>";
             return;
         }
 
         el.innerHTML =
-            '<header class="screen-head"><h1>Galeri</h1><p>Köyümüzden kareler</p></header>' +
-            '<div class="photo-grid" id="photoGrid">' +
+            '<header class="screen-head"><h1>Köy Galerisi</h1><p>Köyümüzden kareler</p></header>' +
+            '<div class="gallery-grid" id="photoGrid">' +
             cachedPhotos.map((p, i) =>
-                '<button type="button" class="photo-item" data-index="' + i + '" aria-label="Fotoğraf: ' + esc(p.title || "Köyümüzden kare") + '">' +
-                '<img src="' + esc(p.thumbs) + '" alt="' + esc(p.title || "Köyümüzden kare") + '" loading="lazy" width="400" height="300">' +
+                '<button type="button" class="gallery-item" data-index="' + i + '" aria-label="Fotoğraf: ' + esc(p.title || "Köyümüzden kare") + '">' +
+                '<img src="' + esc(p.thumbs) + '" alt="' + esc(p.title || "Köyümüzden kare") + '" loading="lazy" width="400" height="400">' +
                 "</button>"
             ).join("") +
             "</div>";
 
-        $$(".photo-item img", el).forEach((img) => imgFallback(img, "Fotoğraf"));
+        $$(".gallery-item img", el).forEach((img) => imgFallback(img, "Fotoğraf"));
 
-        $$(".photo-item", el).forEach((item) => {
+        $$(".gallery-item", el).forEach((item) => {
             item.addEventListener("click", () => openPhoto(Number(item.dataset.index)));
         });
     } catch (err) {

@@ -79,10 +79,10 @@ export function openEventModal(id) {
     openModal({
         title: "Etkinlik",
         content:
-            '<div class="field"><label>Tarih</label><p style="margin:0;font-weight:600">' + esc(fmtDate(ev.date)) + "</p></div>" +
-            (ev.time ? '<div class="field"><label>Saat</label><p style="margin:0;font-weight:600">' + esc(ev.time) + "</p></div>" : "") +
-            (ev.location ? '<div class="field"><label>Konum</label><p style="margin:0;font-weight:600">' + esc(ev.location) + "</p></div>" : "") +
-            '<div class="field"><label>Açıklama</label><p style="margin:0;line-height:1.7">' + esc(ev.description || "Açıklama eklenmedi.") + "</p></div>" +
+            '<div class="form-group"><label>Tarih</label><p style="margin:0;font-weight:600">' + esc(fmtDate(ev.date)) + "</p></div>" +
+            (ev.time ? '<div class="form-group"><label>Saat</label><p style="margin:0;font-weight:600">' + esc(ev.time) + "</p></div>" : "") +
+            (ev.location ? '<div class="form-group"><label>Konum</label><p style="margin:0;font-weight:600">' + esc(ev.location) + "</p></div>" : "") +
+            '<div class="form-group"><label>Açıklama</label><p style="margin:0;line-height:1.7">' + esc(ev.description || "Açıklama eklenmedi.") + "</p></div>" +
             '<div style="margin-top:18px;display:flex;justify-content:flex-end">' +
             '<button type="button" class="btn btn-primary btn-sm js-modal-close">Kapat</button></div>'
     });

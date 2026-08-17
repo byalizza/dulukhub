@@ -61,51 +61,18 @@ export function imgFallback(img, alt = "Görsel yüklenemedi") {
     img.addEventListener("error", () => {
         img.src = "data:image/svg+xml;utf8," + encodeURIComponent(
             '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">' +
-            '<rect width="400" height="300" fill="#2F7D5A" opacity="0.14"/>' +
-            '<text x="200" y="158" text-anchor="middle" font-family="Inter, Arial" font-size="24" fill="#6D766F">Dülük Hub</text>' +
+            '<rect width="400" height="300" fill="#F2B84B" opacity="0.12"/>' +
+            '<text x="200" y="158" text-anchor="middle" font-family="Inter, Arial" font-size="24" fill="#9BA3AF">Dülük Hub</text>' +
             "</svg>"
         );
         img.alt = alt;
     });
 }
 
-/* ---------- Tema ---------- */
-
-const THEME_KEY = "dulukhub-theme";
+/* ---------- Tema (yalnızca karanlık) ---------- */
 
 function initTheme() {
-    const saved = localStorage.getItem(THEME_KEY);
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    applyTheme(saved || (prefersDark ? "dark" : "light"));
-
-    const btn = $("#themeToggle");
-    if (btn) btn.addEventListener("click", toggleTheme);
-
-    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e) => {
-        if (!localStorage.getItem(THEME_KEY)) applyTheme(e.matches ? "dark" : "light");
-    });
-}
-
-function toggleTheme() {
-    const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
-    applyTheme(next);
-}
-
-export function toggleThemeUI() {
-    toggleTheme();
-}
-
-function applyTheme(theme) {
-    document.documentElement.dataset.theme = theme;
-    localStorage.setItem(THEME_KEY, theme);
-    renderThemeIcons(theme);
-}
-
-function renderThemeIcons(theme) {
-    const sun = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.9 4.9 1.4 1.4"/><path d="m17.7 17.7 1.4 1.4"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.3 17.7-1.4 1.4"/><path d="m19.1 4.9-1.4 1.4"/></svg>';
-    const moon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>';
-    const btn = $("#themeToggle");
-    if (btn) btn.innerHTML = theme === "dark" ? sun : moon;
+    document.documentElement.dataset.theme = "dark";
 }
 
 /* ---------- Toast ---------- */

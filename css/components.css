@@ -39,13 +39,13 @@
 
 .btn-primary {
     background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
-    color: #fff;
-    box-shadow: 0 6px 18px rgba(42, 122, 90, 0.3);
+    color: #241907;
+    box-shadow: 0 6px 18px rgba(242, 184, 75, 0.3);
 }
 
 .btn-primary:hover {
     background: linear-gradient(135deg, var(--color-primary-hover) 0%, var(--color-primary) 100%);
-    box-shadow: 0 8px 22px rgba(42, 122, 90, 0.38);
+    box-shadow: 0 8px 22px rgba(242, 184, 75, 0.4);
     transform: translateY(-1px);
 }
 
@@ -70,7 +70,7 @@
 
 .btn-accent {
     background: linear-gradient(135deg, var(--color-accent) 0%, #C0854A 100%);
-    color: #2A2017;
+    color: #241907;
     box-shadow: 0 6px 18px rgba(212, 163, 115, 0.4);
 }
 
@@ -141,8 +141,8 @@
 
 .tabs .chip.active {
     background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
-    color: #fff;
-    box-shadow: 0 4px 14px rgba(42, 122, 90, 0.35);
+    color: #241907;
+    box-shadow: 0 4px 14px rgba(242, 184, 75, 0.35);
 }
 
 /* ---------- Kartlar ---------- */
@@ -163,8 +163,8 @@
     padding: 30px 24px;
     border-radius: 20px;
     background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 55%, var(--color-accent) 140%);
-    color: #fff;
-    box-shadow: 0 10px 34px rgba(42, 122, 90, 0.35);
+    color: #241907;
+    box-shadow: 0 10px 34px rgba(242, 184, 75, 0.22);
 }
 
 .hero-banner::before,
@@ -172,7 +172,7 @@
     content: "";
     position: absolute;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.18);
     pointer-events: none;
 }
 
@@ -196,8 +196,8 @@
     font-weight: 800;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--color-accent);
-    background: rgba(0, 0, 0, 0.22);
+    color: #241907;
+    background: rgba(255, 255, 255, 0.3);
     padding: 5px 13px;
     border-radius: 999px;
     margin-bottom: 12px;
@@ -208,13 +208,13 @@
     font-size: 25px;
     font-weight: 700;
     line-height: 1.22;
-    color: #fff;
+    color: #241907;
 }
 
 .hero-banner p {
     margin: 0;
     font-size: 13.5px;
-    opacity: 0.92;
+    opacity: 0.78;
     max-width: 420px;
 }
 
@@ -455,8 +455,8 @@
 .chip.active {
     background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
     border-color: transparent;
-    color: #fff;
-    box-shadow: 0 4px 14px rgba(42, 122, 90, 0.35);
+    color: #241907;
+    box-shadow: 0 4px 14px rgba(242, 184, 75, 0.35);
 }
 
 /* ---------- Haber detayı ---------- */
@@ -595,8 +595,8 @@
     height: 58px;
     border-radius: 14px;
     background: linear-gradient(150deg, var(--color-primary) 0%, var(--color-secondary) 100%);
-    color: #fff;
-    box-shadow: 0 5px 14px rgba(42, 122, 90, 0.28);
+    color: #241907;
+    box-shadow: 0 5px 14px rgba(242, 184, 75, 0.28);
 }
 
 .event-date .day {
@@ -614,7 +614,7 @@
 
 .event-date.accent {
     background: linear-gradient(150deg, var(--color-accent) 0%, #C0854A 100%);
-    color: #2A2017;
+    color: #241907;
     box-shadow: 0 5px 14px rgba(212, 163, 115, 0.4);
 }
 
@@ -651,8 +651,8 @@
 }
 
 .event-chip.is-today {
-    background: var(--color-accent);
-    color: #2A2017;
+    background: var(--color-primary);
+    color: #241907;
 }
 
 .event-chip.is-tomorrow {
@@ -729,7 +729,7 @@
     font-size: 12.5px;
     font-weight: 700;
     letter-spacing: 0.02em;
-    box-shadow: 0 4px 14px rgba(122, 90, 179, 0.35);
+    box-shadow: 0 4px 14px rgba(157, 140, 255, 0.35);
 }
 
 .progress-track {
@@ -1130,7 +1130,7 @@
 
 .toast.success {
     background: var(--color-primary);
-    color: #fff;
+    color: #241907;
 }
 
 .toast.error {
@@ -1192,7 +1192,7 @@
     align-items: flex-end;
     justify-content: center;
     padding: 0;
-    background: rgba(8, 12, 10, 0.55);
+    background: rgba(0, 0, 0, 0.6);
     animation: scrimIn 180ms ease;
 }
 

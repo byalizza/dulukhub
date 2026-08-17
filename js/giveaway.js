@@ -169,7 +169,7 @@ async function joinGiveaway(id, btn) {
 }
 
 function burstConfetti(card) {
-    const colors = ["#D4A373", "#2A7A5A", "#C0854A", "#7A5AB3", "#E8B45A"];
+    const colors = ["#F2B84B", "#58A6FF", "#9D8CFF", "#2ECCB8", "#F97A8D"];
     const burst = document.createElement("div");
     burst.className = "confetti-burst";
     for (let i = 0; i < 26; i++) {

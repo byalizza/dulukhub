@@ -1,9 +1,9 @@
 /* ============================================================
    Dülük Hub — settings.js
-   Ayarlar: tema, profil, yönetim girişi, çıkış, hakkında.
+   Ayarlar: profil, bildirimler, yönetim girişi, çıkış, hakkında.
    ============================================================ */
 
-import { $, esc, initials, toast, toggleThemeUI } from "./app.js";
+import { $, esc, initials, toast } from "./app.js";
 import { navigateTo } from "./navigation.js";
 import { getCurrentProfile, getCurrentUser, openAdminCodeModal, logout } from "./auth.js";
 
@@ -33,12 +33,6 @@ export async function renderSettings() {
     el.innerHTML =
         '<header class="screen-head"><h1>Ayarlar</h1><p>Uygulama tercihleri ve hesap</p></header>' +
         '<div class="settings-group">' +
-
-        '<div class="card setting-row">' +
-        '<span class="nav-icon icon-settings">' +
-        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.9 4.9 1.4 1.4"/><path d="m17.7 17.7 1.4 1.4"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.3 17.7-1.4 1.4"/><path d="m19.1 4.9-1.4 1.4"/></svg></span>' +
-        "<div><strong>Tema</strong><small>Karanlık / aydınlık görünüm</small></div>" +
-        '<button type="button" class="btn btn-sm btn-ghost" id="themeSetting">Değiştir</button></div>' +
 
         '<div class="card setting-row" style="cursor:pointer" data-go="profile">' +
         '<span class="nav-icon icon-profile">' +
@@ -72,13 +66,7 @@ export async function renderSettings() {
 
         '<div class="card" style="padding:16px;font-size:12.5px;color:var(--color-muted)">' +
         "<p style=\"margin:0 0 4px\"><strong style=\"color:var(--color-text)\">Dülük Köyü</strong> — Dülük Köyü'nün dijital buluşma noktası.</p>" +
-        "<p style=\"margin:0\">© 2026 Dülük Köyü. Sürüm 2.1 (yeni tasarım).</p></div></div>";
-
-    $("#themeSetting", el).addEventListener("click", () => {
-        toggleThemeUI();
-        toast(document.documentElement.dataset.theme === "dark" ? "Karanlık tema açıldı." : "Aydınlık tema açıldı.");
-        renderThemeIconTip();
-    });
+        "<p style=\"margin:0\">© 2026 Dülük Köyü. Sürüm 2.2 (karanlık tema).</p></div></div>";
 
     const notifEmail = $("#notifEmail", el);
     if (notifEmail) {
@@ -103,9 +91,4 @@ export async function renderSettings() {
 
 async function navigatelessout() {
     await logout();
-}
-
-function renderThemeIconTip() {
-    const label = $("#themeSetting");
-    if (label) label.textContent = document.documentElement.dataset.theme === "dark" ? "Aydınlığa geç" : "Karanlığa geç";
 }

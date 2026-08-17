@@ -8,42 +8,44 @@
     --font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     --font-head: "Playfair Display", Georgia, "Times New Roman", serif;
 
-    --color-primary: #2A7A5A;
-    --color-primary-hover: #22664B;
-    --color-primary-soft: rgba(42, 122, 90, 0.12);
-    --color-secondary: #3A8F6B;
+    /* Karanlık tema (tek tema): koyu zemin + altın vurgu */
+    --color-primary: #F2B84B;
+    --color-primary-hover: #FAC968;
+    --color-primary-soft: rgba(242, 184, 75, 0.15);
+    --color-secondary: #E8A93C;
     --color-accent: #D4A373;
-    --color-accent-soft: rgba(212, 163, 115, 0.2);
+    --color-accent-soft: rgba(212, 163, 115, 0.18);
 
-    --color-bg: #F8F4EE;
-    --color-surface: #FFFFFF;
-    --color-surface-2: #EFE9DF;
-    --color-text: #1C211D;
-    --color-muted: #6E6A5F;
-    --color-border: #E5DED2;
-    --color-danger: #B4442E;
-    --color-danger-soft: rgba(180, 68, 46, 0.12);
-    --color-success: #1F7A4D;
-    --color-success-soft: rgba(31, 122, 77, 0.12);
+    --color-bg: #0B0D0F;
+    --color-surface: #14171C;
+    --color-surface-2: #1E2229;
+    --color-text: #F2F4F7;
+    --color-text-soft: #C8CDD6;
+    --color-muted: #9BA3AF;
+    --color-border: #2A2F38;
+    --color-danger: #F5655E;
+    --color-danger-soft: rgba(245, 101, 94, 0.14);
+    --color-success: #3DD68C;
+    --color-success-soft: rgba(61, 214, 140, 0.14);
 
     /* Sekme renkleri (soft zeminler) */
-    --tone-news: #2A7A5A;
-    --tone-news-soft: rgba(42, 122, 90, 0.12);
-    --tone-events: #C0854A;
-    --tone-events-soft: rgba(212, 163, 115, 0.2);
-    --tone-giveaway: #7A5AB3;
-    --tone-giveaway-soft: rgba(122, 90, 179, 0.13);
-    --tone-gallery: #1E7A78;
-    --tone-gallery-soft: rgba(30, 122, 120, 0.13);
-    --tone-stories: #C0562E;
-    --tone-stories-soft: rgba(192, 86, 46, 0.13);
-    --tone-heritage: #8A6D3F;
-    --tone-heritage-soft: rgba(138, 109, 63, 0.15);
-    --tone-admin: #B4442E;
-    --tone-admin-soft: rgba(180, 68, 46, 0.12);
+    --tone-news: #F2B84B;
+    --tone-news-soft: rgba(242, 184, 75, 0.15);
+    --tone-events: #58A6FF;
+    --tone-events-soft: rgba(88, 166, 255, 0.15);
+    --tone-giveaway: #9D8CFF;
+    --tone-giveaway-soft: rgba(157, 140, 255, 0.16);
+    --tone-gallery: #2ECCB8;
+    --tone-gallery-soft: rgba(46, 204, 184, 0.15);
+    --tone-stories: #F97A8D;
+    --tone-stories-soft: rgba(249, 122, 141, 0.15);
+    --tone-heritage: #D8A855;
+    --tone-heritage-soft: rgba(216, 168, 85, 0.16);
+    --tone-admin: #F5655E;
+    --tone-admin-soft: rgba(245, 101, 94, 0.15);
 
-    --shadow-soft: 0 8px 30px rgba(0, 0, 0, 0.08);
-    --shadow-modal: 0 18px 50px rgba(0, 0, 0, 0.18);
+    --shadow-soft: 0 10px 34px rgba(0, 0, 0, 0.4);
+    --shadow-modal: 0 22px 60px rgba(0, 0, 0, 0.65);
 
     --radius-sm: 8px;
     --radius-btn: 14px;
@@ -54,26 +56,6 @@
 
     --header-height: 58px;
     --drawer-width: 280px;
-}
-
-[data-theme="dark"] {
-    --color-bg: #121713;
-    --color-surface: #181D19;
-    --color-surface-2: #1F2621;
-    --color-text: #F2F4EE;
-    --color-muted: #A9B2A4;
-    --color-border: #2B332C;
-    --color-primary-soft: rgba(122, 201, 160, 0.14);
-    --color-accent-soft: rgba(212, 163, 115, 0.18);
-    --tone-news-soft: rgba(122, 201, 160, 0.14);
-    --tone-events-soft: rgba(230, 185, 120, 0.16);
-    --tone-giveaway-soft: rgba(165, 135, 220, 0.14);
-    --tone-gallery-soft: rgba(90, 190, 186, 0.14);
-    --tone-stories-soft: rgba(230, 130, 80, 0.14);
-    --tone-heritage-soft: rgba(200, 165, 110, 0.15);
-    --tone-admin-soft: rgba(220, 110, 90, 0.14);
-    --shadow-soft: 0 8px 30px rgba(0, 0, 0, 0.35);
-    --shadow-modal: 0 18px 50px rgba(0, 0, 0, 0.55);
 }
 
 html,
@@ -128,7 +110,7 @@ button {
 
 ::selection {
     background: var(--color-primary);
-    color: #fff;
+    color: #241907;
 }
 
 :focus-visible {
@@ -325,12 +307,12 @@ button {
     border: none;
     border-radius: 999px;
     background: var(--color-primary);
-    color: #fff;
+    color: #241907;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    box-shadow: 0 8px 24px rgba(42, 122, 90, 0.35);
+    box-shadow: 0 8px 24px rgba(242, 184, 75, 0.32);
     transition: transform var(--transition-fast), opacity var(--transition-fast);
     opacity: 0;
     pointer-events: none;
@@ -465,10 +447,6 @@ button {
     color: var(--color-primary);
     border-left: 3px solid var(--color-primary);
     border-radius: 12px 8px 8px 12px;
-}
-
-[data-theme="dark"] .drawer-items a[aria-current="page"] {
-    color: var(--color-text);
 }
 
 .drawer-items a[aria-current="page"] .nav-icon {

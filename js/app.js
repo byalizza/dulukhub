@@ -62,7 +62,7 @@ export function imgFallback(img, alt = "Görsel yüklenemedi") {
         img.src = "data:image/svg+xml;utf8," + encodeURIComponent(
             '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">' +
             '<rect width="400" height="300" fill="#F2B84B" opacity="0.12"/>' +
-            '<text x="200" y="158" text-anchor="middle" font-family="Inter, Arial" font-size="24" fill="#9BA3AF">Dülük Hub</text>' +
+            '<text x="200" y="158" text-anchor="middle" font-family="Manrope, Arial" font-size="24" fill="#9BA3AF">Dülük Hub</text>' +
             "</svg>"
         );
         img.alt = alt;

@@ -205,9 +205,9 @@
 
 .hero-banner h1 {
     margin: 0 0 8px;
-    font-size: 25px;
+    font-size: 28px;
     font-weight: 700;
-    line-height: 1.22;
+    line-height: 1.18;
     color: #241907;
 }
 
@@ -224,7 +224,7 @@
     }
 
     .hero-banner h1 {
-        font-size: 32px;
+        font-size: 36px;
     }
 }
 
@@ -491,9 +491,9 @@
 
 .news-detail h1 {
     margin: 6px 0 10px;
-    font-size: 24px;
-    font-weight: 800;
-    line-height: 1.25;
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.2;
 }
 
 .news-detail-meta {

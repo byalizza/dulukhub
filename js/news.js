@@ -156,18 +156,19 @@ export async function renderNewsDetail(id) {
         const paragraphs = Array.isArray(post.content) && post.content.length
             ? post.content
             : [post.description || "Bu haber için henüz detay eklenmedi."];
+        const lead = post.description ? '<p class="lead">' + esc(post.description) + "</p>" : "";
 
         el.innerHTML =
             '<div class="news-detail">' +
             '<button type="button" class="back-link" id="newsBack">' +
             '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>' +
             "Haberler</button>" +
-            '<div class="news-detail-meta"><span class="badge">' + esc(post.category || "Güncel") + '</span><time datetime="' + esc(post.date) + '">' + fmtDate(post.date) + "</time></div>" +
             "<h1>" + esc(post.title) + "</h1>" +
+            '<div class="news-detail-meta"><span class="badge">' + esc(post.category || "Güncel") + '</span><time datetime="' + esc(post.date) + '">' + fmtDate(post.date) + "</time></div>" +
             '<div class="news-detail-cover">' +
             '<img src="' + esc(post.cover) + '" alt="' + esc(post.title) + '" width="960" height="540">' +
             "</div>" +
-            '<div class="content">' + paragraphs.map((p) => "<p>" + esc(p) + "</p>").join("") + "</div>" +
+            '<div class="content">' + lead + paragraphs.map((p) => "<p>" + esc(p) + "</p>").join("") + "</div>" +
             "</div>";
 
         $("#newsBack").addEventListener("click", () => {

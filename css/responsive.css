@@ -1,0 +1,129 @@
+/* ============================================================
+   Dülük Hub — responsive.css
+   Mobil / tablet / masaüstü düzenleri
+   ============================================================ */
+
+/* ---------- Tablet / masaüstü küçük: mobil alt menü ---------- */
+
+@media (max-width: 900px) {
+    .desktop-nav {
+        display: none;
+    }
+
+    .mobile-nav {
+        display: flex;
+    }
+
+    .main-content {
+        padding-bottom: var(--mobile-nav-height);
+    }
+}
+
+@media (min-width: 901px) {
+    .mobile-nav {
+        display: none;
+    }
+
+    .more-menu {
+        display: none !important;
+    }
+}
+
+/* ---------- Galeri ---------- */
+
+@media (max-width: 1024px) {
+    .photo-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .photo-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .news-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 14px;
+    }
+
+    .event-list {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-forms {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 520px) {
+    .news-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .home-news {
+        grid-template-columns: 1fr;
+    }
+
+    .mini-events {
+        grid-template-columns: 1fr;
+    }
+
+    .screen-inner {
+        padding: 24px 16px 40px;
+    }
+}
+
+/* ---------- Ana sayfa mini fotoğraflar ---------- */
+
+@media (max-width: 768px) {
+    .mini-photos {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .hero h1 {
+        font-size: 34px;
+    }
+}
+
+/* ---------- Küçük telefonlar ---------- */
+
+@media (max-width: 380px) {
+    .hero h1 {
+        font-size: 30px;
+    }
+
+    .photo-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+
+    .btn {
+        padding: 10px 15px;
+    }
+}
+
+/* ---------- Düşük hareket tercihi ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ---------- Dokunma hedefleri ---------- */
+
+@media (hover: none) and (pointer: coarse) {
+    .mini-news:hover,
+    .event-card:hover,
+    .news-card:hover,
+    .photo-item:hover img,
+    .mini-photo:hover img {
+        transform: none;
+    }
+}

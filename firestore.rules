@@ -1,0 +1,79 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn()
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    // Kullanıcılar: herkes kendi profiline erişir.
+    match /users/{uid} {
+      allow read: if true;
+      allow create: if isOwner(uid);
+      allow update: if isOwner(uid);
+      allow delete: if false;
+    }
+
+    // Haberler: herkes okuyabilir, yalnızca admin yazabilir.
+    match /posts/{postId} {
+      allow read: if true;
+      allow create: if isAdmin()
+        && request.resource.data.title is string
+        && request.resource.data.title.size() > 0
+        && request.resource.data.title.size() <= 150
+        && request.resource.data.description is string
+        && request.resource.data.description.size() <= 500;
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Fotoğraflar: herkes okuyabilir, yalnızca admin yazabilir.
+    match /photos/{photoId} {
+      allow read: if true;
+      allow create: if isAdmin()
+        && request.resource.data.imageUrl is string
+        && request.resource.data.imageUrl.size() > 0
+        && request.resource.data.thumbnailUrl is string;
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Etkinlikler: herkes okuyabilir, yalnızca admin yazabilir.
+    match /events/{eventId} {
+      allow read: if true;
+      allow create: if isAdmin()
+        && request.resource.data.title is string
+        && request.resource.data.title.size() > 0
+        && request.resource.data.title.size() <= 150
+        && request.resource.data.date is string;
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Duyurular: herkes okuyabilir, yalnızca admin yazabilir.
+    match /announcements/{announcementId} {
+      allow read: if true;
+      allow create: if isAdmin()
+        && request.resource.data.title is string
+        && request.resource.data.title.size() > 0
+        && request.resource.data.title.size() <= 300;
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Ayarlar: salt okunur (ör. site duyurusu banner'ı).
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+  }
+}

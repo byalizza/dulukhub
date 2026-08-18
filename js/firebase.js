@@ -55,7 +55,7 @@ export const db = getFirestore(app);
 
 let live = null; // null: henüz bilinmiyor
 
-async function isLive() {
+export async function isLive() {
     if (live !== null) return live;
     try {
         await getDocs(query(collection(db, "posts"), limit(1)));

@@ -41,12 +41,6 @@ export async function renderSettings() {
         "<div><strong>Hatırlatmalar</strong><small>Çekiliş ve etkinlik hatırlatmaları</small></div>" +
         '<button type="button" class="switch" id="notifPush" role="switch" aria-checked="' + (readPref(NOTIF_KEYS.push) ? "true" : "false") + '" aria-label="Çekiliş ve etkinlik hatırlatmaları"></button></div>' +
 
-        '<div class="card setting-row" style="cursor:pointer" id="settingsAdmin">' +
-        '<span class="nav-icon icon-admin">' +
-        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>' +
-        "<div><strong>Yönetim Paneli</strong><small>admin.html üzerinden yönetim</small></div>" +
-        '<button type="button" class="btn btn-sm btn-ghost">Aç</button></div>' +
-
         '<div class="card" style="padding:16px;font-size:12.5px;color:var(--color-muted)">' +
         "<p style=\"margin:0 0 4px\"><strong style=\"color:var(--color-text)\">Dülük Köyü</strong> — Dülük Köyü'nün dijital buluşma noktası.</p>" +
         "<p style=\"margin:0\">© 2026 Dülük Köyü. Sürüm 2.3 (karanlık tema).</p></div></div>";
@@ -66,8 +60,4 @@ export async function renderSettings() {
             toast(on ? "Hatırlatmalar açıldı." : "Hatırlatmalar kapatıldı.");
         });
     }
-
-    $("#settingsAdmin", el).addEventListener("click", () => {
-        window.open("./admin.html", "_blank");
-    });
 }

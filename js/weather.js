@@ -3,8 +3,8 @@
    Header'da sıcaklık + durum + yarın paneli.
    ============================================================ */
 
-const LAT = 37.07;
-const LON = 37.38;
+const LAT = 37.150;
+const LON = 37.367;
 
 const WMO = {
     0: ["☀️", "Güneşli"], 1: ["🌤️", "Az bulutlu"], 2: ["⛅", "Parçalı bulutlu"], 3: ["☁️", "Kapalı"],

@@ -1,12 +1,14 @@
 /* ============================================================
    Dülük Hub — admin-tools.js
-   Etkinlikleri toplu olarak Firestore'a ekler.
+   Etkinlikleri Firestore'a ekler.
+   - Aynı başlıkta etkinlik varsa eklemez.
+   - Aynı başlıktan birden fazla varsa kopyaları siler, 1 bırakır.
    Kullanıcının mevcut admin oturumunu kullanır.
    ============================================================ */
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
-import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
+import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyDH_hZKMLL8vqM1ee_UGCo68Sr1TDQHlE4",
@@ -51,30 +53,71 @@ onAuthStateChanged(auth, (user) => {
 btn.addEventListener("click", async () => {
     btn.disabled = true;
     statusEl.innerHTML = "";
-    let ok = 0, fail = 0;
 
-    for (const ev of events) {
-        const payload = {
-            title: ev.title,
-            date: ev.date,
-            time: ev.time || "",
-            location: ev.location,
-            description: ev.description,
-            createdAt: new Date().toISOString()
-        };
-        if (ev.endDate) payload.endDate = ev.endDate;
+    const log = (cls, msg) => statusEl.insertAdjacentHTML("beforeend", '<div class="' + cls + '">' + msg + "</div>");
 
-        try {
-            await addDoc(collection(db, "events"), payload);
-            ok++;
-            statusEl.insertAdjacentHTML("beforeend", '<div class="ok">✔ ' + esc(ev.title) + " eklendi.</div>");
-        } catch (err) {
-            fail++;
-            statusEl.insertAdjacentHTML("beforeend", '<div class="err">✘ ' + esc(ev.title) + " — " + esc(err.message) + "</div>");
+    try {
+        const snap = await getDocs(collection(db, "events"));
+        const byTitle = {};
+        snap.docs.forEach((d) => {
+            const t = (d.data().title || "").trim().toLowerCase();
+            (byTitle[t] = byTitle[t] || []).push({ id: d.id, doc: d });
+        });
+
+        /* ---------- Kopyaları temizle: aynı addan 1 tane kalsın ---------- */
+
+        let removed = 0;
+        for (const t in byTitle) {
+            const list = byTitle[t];
+            if (list.length > 1) {
+                for (const x of list.slice(1)) {
+                    try {
+                        await deleteDoc(doc(db, "events", x.id));
+                        removed++;
+                    } catch (e) {
+                        log("err", "Kopya silinemedi: " + esc(e.message));
+                    }
+                }
+                byTitle[t] = [list[0]];
+            }
         }
+        log("info", removed + " kopya etkinlik silindi.");
+
+        /* ---------- Ekle: yoksa ekle, varsa atla ---------- */
+
+        let added = 0, skipped = 0;
+
+        for (const ev of events) {
+            if (byTitle[ev.title.trim().toLowerCase()]) {
+                skipped++;
+                log("info", "↷ " + esc(ev.title) + " zaten var, atlandı.");
+                continue;
+            }
+
+            const payload = {
+                title: ev.title,
+                date: ev.date,
+                time: ev.time || "",
+                location: ev.location,
+                description: ev.description,
+                createdAt: new Date().toISOString()
+            };
+            if (ev.endDate) payload.endDate = ev.endDate;
+
+            try {
+                await addDoc(collection(db, "events"), payload);
+                added++;
+                log("ok", "✔ " + esc(ev.title) + " eklendi.");
+            } catch (err) {
+                log("err", "✘ " + esc(ev.title) + " — " + esc(err.message));
+            }
+        }
+
+        log("info", "Sonuç: " + added + " eklendi, " + skipped + " zaten vardı, " + removed + " kopya silindi.");
+    } catch (err) {
+        log("err", "Hata: " + esc(err.message));
     }
 
-    statusEl.insertAdjacentHTML("beforeend", '<div class="info">Sonuç: ' + ok + " eklendi, " + fail + " hata.</div>");
     btn.disabled = false;
 });
 

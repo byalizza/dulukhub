@@ -2082,39 +2082,52 @@
 }
 
 /* ============================================================
-   Hava Durumu Widget'ı
+   Hava Durumu Widget'ı (sabit sağ üst)
    ============================================================ */
+
+.weather-fixed {
+    position: fixed;
+    top: 60px;
+    right: 16px;
+    z-index: 50;
+    width: 220px;
+    border-radius: 14px;
+    overflow: hidden;
+    backdrop-filter: blur(16px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
 
 .weather-widget-container {
     margin: 16px 0;
 }
 
 .weather-widget {
-    background: linear-gradient(135deg, rgba(6, 182, 212, 0.12), rgba(139, 92, 246, 0.12));
-    border: 1px solid rgba(6, 182, 212, 0.2);
-    border-radius: 16px;
-    padding: 20px;
+    background: linear-gradient(135deg, rgba(6, 182, 212, 0.18), rgba(139, 92, 246, 0.18));
+    border: 1px solid rgba(6, 182, 212, 0.25);
+    border-radius: 14px;
+    padding: 14px;
     overflow: hidden;
+    backdrop-filter: blur(16px);
 }
 
 .weather-widget.loading {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 80px;
+    min-height: 60px;
 }
 
 .weather-loading {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     color: var(--color-muted);
-    font-size: 14px;
+    font-size: 12px;
 }
 
 .weather-spinner {
-    width: 20px;
-    height: 20px;
+    width: 16px;
+    height: 16px;
     border: 2px solid var(--color-border);
     border-top-color: var(--color-primary);
     border-radius: 50%;
@@ -2126,34 +2139,34 @@
 .weather-main {
     display: flex;
     align-items: center;
-    gap: 14px;
-    margin-bottom: 16px;
+    gap: 10px;
+    margin-bottom: 10px;
 }
 
 .weather-icon-large {
-    font-size: 44px;
+    font-size: 30px;
     line-height: 1;
 }
 
 .weather-temp {
-    font-size: 38px;
+    font-size: 28px;
     font-weight: 800;
     color: var(--color-text);
     line-height: 1;
 }
 
 .weather-desc {
-    font-size: 14px;
+    font-size: 12px;
     color: var(--color-text-soft);
     margin-top: 2px;
 }
 
 .weather-details {
     display: flex;
-    gap: 16px;
-    flex-wrap: wrap;
-    margin-bottom: 16px;
-    padding-bottom: 16px;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
     border-bottom: 1px solid var(--color-border);
 }
 
@@ -2161,72 +2174,84 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    font-size: 13px;
+    font-size: 11px;
     color: var(--color-text-soft);
 }
 
 .weather-detail svg {
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
     opacity: 0.5;
 }
 
 .weather-forecast {
     display: flex;
-    gap: 8px;
+    gap: 4px;
     overflow-x: auto;
     padding-bottom: 4px;
 }
 
 .forecast-day {
     flex: 1;
-    min-width: 60px;
+    min-width: 40px;
     text-align: center;
-    padding: 10px 6px;
+    padding: 6px 3px;
     background: rgba(255, 255, 255, 0.05);
-    border-radius: 10px;
+    border-radius: 8px;
 }
 
 .forecast-label {
     display: block;
-    font-size: 11px;
+    font-size: 9px;
     font-weight: 600;
     color: var(--color-muted);
-    margin-bottom: 6px;
+    margin-bottom: 3px;
 }
 
 .forecast-icon {
     display: block;
-    font-size: 22px;
-    margin-bottom: 6px;
+    font-size: 16px;
+    margin-bottom: 3px;
 }
 
 .forecast-temp {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 1px;
 }
 
 .forecast-max {
-    font-size: 14px;
+    font-size: 11px;
     font-weight: 700;
     color: var(--color-text);
 }
 
 .forecast-min {
-    font-size: 12px;
+    font-size: 10px;
     color: var(--color-muted);
 }
 
 .weather-error {
     text-align: center;
-    padding: 20px;
+    padding: 14px;
 }
 
 .weather-error p {
     color: var(--color-muted);
-    font-size: 14px;
-    margin: 8px 0 0;
+    font-size: 12px;
+    margin: 6px 0 0;
+}
+
+@media (max-width: 899px) {
+    .weather-fixed {
+        position: fixed;
+        top: auto;
+        bottom: 70px;
+        right: 12px;
+        left: 12px;
+        width: auto;
+        z-index: 50;
+    }
 }
 
 /* ============================================================

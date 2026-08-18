@@ -6,6 +6,7 @@
 import { initRouter } from "./navigation.js";
 import { initAuth } from "./auth.js";
 import { initNotifications } from "./notifications.js";
+import { renderWeatherWidget } from "./weather.js";
 
 /* ---------- DOM yardımcıları ---------- */
 
@@ -192,6 +193,9 @@ function init() {
     initAuth();
     initRouter();
     initNotifications();
+
+    const weatherEl = document.querySelector("#weatherFixed");
+    if (weatherEl) renderWeatherWidget(weatherEl);
 
     const splash = $("#splash");
     setTimeout(() => splash.classList.add("done"), 300);

@@ -155,6 +155,7 @@ function initTabs() {
             if (tab === "users") renderUserList();
             if (tab === "content") renderContentList();
             if (tab === "add") renderAddForms();
+            if (tab === "tools") location.href = "admin-tools.html";
         });
     });
 

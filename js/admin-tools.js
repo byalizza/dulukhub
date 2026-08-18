@@ -2,7 +2,7 @@
    Dülük Hub — admin-tools.js
    Bekleyen içerik onay ekranı:
    Tarihi eserler -> Köy Hikayesi adayları listelenir,
-   kullanıcı tek tek veya tümünü onaylar.
+   kullanıcı tek tek veya tümünü onaylar; istenmeyenleri siler.
    "Panele Dön" oturumu kapatmaz, sadece panel sayfasına gider.
    ============================================================ */
 
@@ -95,6 +95,7 @@ function renderList() {
             '<div class="item-actions">' +
             '<button type="button" class="small" data-approve="' + i + '"' + (isApproved || isSkipped ? " disabled" : "") + ">Onayla</button>" +
             '<button type="button" class="small secondary" data-skip="' + i + '"' + (isApproved || isSkipped ? " disabled" : "") + ">Atla</button>" +
+            '<button type="button" class="small danger" data-del="' + i + '"' + (isApproved ? " disabled" : "") + ">Sil</button>" +
             "</div></div>"
         );
     }).join("");
@@ -104,6 +105,9 @@ function renderList() {
     });
     $$("#pendingList [data-skip]").forEach((btn) => {
         btn.addEventListener("click", () => skipOne(Number(btn.dataset.skip)));
+    });
+    $$("#pendingList [data-del]").forEach((btn) => {
+        btn.addEventListener("click", () => deleteOne(Number(btn.dataset.del)));
     });
 }
 
@@ -133,6 +137,21 @@ function skipOne(i) {
     if (!h) return;
     skipped.add(h.id);
     log("info", "Atlandı: " + esc(h.title));
+    renderList();
+}
+
+async function deleteOne(i) {
+    const h = pending[i];
+    if (!h) return;
+    if (!confirm('"' + h.title + '" tamamen silinsin mi?')) return;
+
+    try {
+        await deleteDoc(doc(db, "heritage", h.id));
+        pending = pending.filter((x) => x.id !== h.id);
+        log("ok", "Silindi: " + esc(h.title));
+    } catch (err) {
+        log("err", "Silinemedi: " + esc(h.title) + " — " + esc(err.message));
+    }
     renderList();
 }
 

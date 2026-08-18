@@ -7,7 +7,7 @@ const LAT = 37.150;
 const LON = 37.367;
 
 const WMO = {
-    0: ["☀️", "Güneşli"], 1: ["☀️", "Güneşli"], 2: ["⛅", "Parçalı bulutlu"], 3: ["☁️", "Kapalı"],
+    0: ["☀️", "Güneşli"], 1: ["🌤️", "Az bulutlu"], 2: ["⛅", "Parçalı bulutlu"], 3: ["☁️", "Kapalı"],
     45: ["🌫️", "Sisli"], 48: ["🌫️", "Sisli"],
     51: ["🌦️", "Çiseleme"], 53: ["🌦️", "Çiseleme"], 55: ["🌧️", "Şiddetli yağmur"],
     61: ["🌧️", "Yağmur"], 63: ["🌧️", "Yağmur"], 65: ["🌧️", "Şiddetli yağmur"],

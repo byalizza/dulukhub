@@ -8,111 +8,99 @@ service cloud.firestore {
 
     function isAdmin() {
       return isSignedIn()
-        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin";
     }
 
-    function isOwner(uid) {
-      return isSignedIn() && request.auth.uid == uid;
-    }
-
-    // Kullanıcılar: herkes kendi profiline erişir.
-    match /users/{uid} {
+    // ===== KULLANICILAR =====
+    match /users/{userId} {
       allow read: if true;
-      allow create: if isOwner(uid);
-      allow update: if isOwner(uid);
-      allow delete: if false;
+      allow create: if isSignedIn() && request.auth.uid == userId;
+      allow update: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow delete: if isAdmin();
     }
 
-    // Haberler: herkes okuyabilir, yalnızca admin yazabilir.
+    // ===== HABERLER =====
     match /posts/{postId} {
       allow read: if true;
-      allow create: if isAdmin()
-        && request.resource.data.title is string
-        && request.resource.data.title.size() > 0
-        && request.resource.data.title.size() <= 150
-        && request.resource.data.description is string
-        && request.resource.data.description.size() <= 500;
+      allow create: if isAdmin();
       allow update: if isAdmin();
       allow delete: if isAdmin();
     }
 
-    // Fotoğraflar: herkes okuyabilir, yalnızca admin yazabilir.
-    // Görseller Storage yerine küçültülüp base64 olarak kaydedilir (belge limiti ~1MB).
-    match /photos/{photoId} {
+    // ===== DUYURULAR =====
+    match /announcements/{docId} {
       allow read: if true;
-      allow create: if isAdmin()
-        && request.resource.data.imageUrl is string
-        && request.resource.data.imageUrl.size() > 0
-        && request.resource.data.imageUrl.size() <= 750000
-        && request.resource.data.thumbnailUrl is string
-        && request.resource.data.thumbnailUrl.size() > 0
-        && request.resource.data.thumbnailUrl.size() <= 750000;
+      allow create: if isAdmin();
       allow update: if isAdmin();
       allow delete: if isAdmin();
     }
 
-    // Etkinlikler: herkes okuyabilir, yalnızca admin yazabilir.
-    match /events/{eventId} {
+    // ===== ETKİNLİKLER =====
+    match /events/{docId} {
       allow read: if true;
-      allow create: if isAdmin()
-        && request.resource.data.title is string
-        && request.resource.data.title.size() > 0
-        && request.resource.data.title.size() <= 150
-        && request.resource.data.date is string;
+      allow create: if isAdmin();
       allow update: if isAdmin();
       allow delete: if isAdmin();
     }
 
-    // Duyurular: herkes okuyabilir, yalnızca admin yazabilir.
-    match /announcements/{announcementId} {
+    // ===== ÇEKİLİŞLER =====
+    match /giveaways/{docId} {
       allow read: if true;
-      allow create: if isAdmin()
-        && request.resource.data.title is string
-        && request.resource.data.title.size() > 0
-        && request.resource.data.title.size() <= 300;
+      allow create: if isAdmin();
       allow update: if isAdmin();
       allow delete: if isAdmin();
     }
 
-    // Çekilişler: herkes okuyabilir; oturum açmış herkes katılabilir
-    // (sayaç arttırma), admin ekleme/silme yapabilir.
-    match /giveaways/{giveawayId} {
+    // ===== HİKÂYELER =====
+    match /stories/{docId} {
       allow read: if true;
-      allow create: if isAdmin()
-        && request.resource.data.title is string
-        && request.resource.data.title.size() > 0
-        && request.resource.data.title.size() <= 120
-        && request.resource.data.endDate is string;
-      allow update: if isAdmin() || (isSignedIn()
-        && request.resource.data.diff( resource.data ).affectedKeys()
-           .hasOnly(['participants'])
-        && request.resource.data.participants == resource.data.participants + 1);
-      allow delete: if isAdmin();
-    }
-
-    // Köy hikayeleri: herkes okuyabilir, yalnızca admin yazabilir.
-    match /stories/{storyId} {
-      allow read: if true;
-      allow create: if isAdmin()
-        && request.resource.data.title is string
-        && request.resource.data.title.size() > 0
-        && request.resource.data.content is string
-        && request.resource.data.content.size() > 0;
+      allow create: if isAdmin();
       allow update: if isAdmin();
       allow delete: if isAdmin();
     }
 
-    // Tarihi eserler: herkes okuyabilir, yalnızca admin yazabilir.
-    match /heritage/{heritageId} {
+    // ===== TARİHİ ESERLER =====
+    match /heritage/{docId} {
       allow read: if true;
-      allow create: if isAdmin()
-        && request.resource.data.title is string
-        && request.resource.data.title.size() > 0;
+      allow create: if isAdmin();
       allow update: if isAdmin();
       allow delete: if isAdmin();
     }
 
-    // Ayarlar: salt okunur (ör. site duyurusu banner'ı).
+    // ===== FOTOĞRAFLAR =====
+    match /photos/{docId} {
+      allow read: if true;
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // ===== YORUMLAR =====
+    match /comments/{commentId} {
+      allow read: if true;
+      allow create: if isSignedIn()
+        && request.resource.data.postId is string
+        && request.resource.data.postId.size() > 0
+        && request.resource.data.text is string
+        && request.resource.data.text.size() > 0
+        && request.resource.data.text.size() <= 500;
+      allow delete: if isSignedIn() && resource.data.uid == request.auth.uid;
+    }
+
+    // ===== ANALİTİK =====
+    match /analytics/{docId} {
+      allow read: if true;
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+    }
+
+    // ===== SOSYAL MEDYA TIKLAMA SAYAÇLARI =====
+    match /socialClicks/{platform} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    // ===== AYARLAR =====
     match /settings/{settingId} {
       allow read: if true;
       allow write: if isAdmin();

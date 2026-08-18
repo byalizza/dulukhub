@@ -21,11 +21,10 @@ export async function getComments(postId) {
                 query(
                     collection(db, "comments"),
                     where("postId", "==", postId),
-                    orderBy("createdAt", "desc"),
                     limit(50)
                 )
             );
-            return snap.docs.map((d) => {
+            const items = snap.docs.map((d) => {
                 const data = d.data();
                 return {
                     id: d.id,
@@ -38,6 +37,7 @@ export async function getComments(postId) {
                         : new Date().toISOString()
                 };
             });
+            return items.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         } catch (err) {
             console.warn("Yorumlar okunamadı:", err);
             return [];
@@ -59,6 +59,9 @@ export async function addComment(postId, text) {
     }
 
     const user = auth.currentUser;
+    console.log("[Comments] auth.currentUser:", user ? user.uid : "NULL");
+    console.log("[Comments] isLive:", await isLive());
+
     const author = user?.displayName || user?.email?.split("@")[0] || "Anonim";
     const uid = user?.uid || "anonymous";
 
@@ -74,8 +77,8 @@ export async function addComment(postId, text) {
             toast("Yorum eklendi!", "success");
             return docRef.id;
         } catch (err) {
-            console.warn("Yorum eklenemedi:", err);
-            toast("Yorum eklenemedi.", "error");
+            console.error("[Comments] Firestore hatası:", err.code, err.message);
+            toast("Yorum eklenemedi: " + err.message, "error");
             return null;
         }
     }
@@ -91,7 +94,7 @@ export async function addComment(postId, text) {
     };
     local.push(newComment);
     localStorage.setItem("dulukhub-comments", JSON.stringify(local));
-    toast("Yorum eklendi!", "success");
+    toast("Yorum eklendi (yerel)!", "success");
     return newComment.id;
 }
 
@@ -188,6 +191,7 @@ export async function renderComments(postId, container) {
     }
 
     if (form) {
+        console.log("[Comments] Form bulundu, submit bağlanıyor");
         form.addEventListener("submit", async (e) => {
             e.preventDefault();
             const text = input.value.trim();

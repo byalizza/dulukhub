@@ -22,11 +22,11 @@ export async function renderNewsList() {
     if (!cachedPosts.length) {
         el.innerHTML =
             '<section class="hero-banner">' +
-            '<span class="hero-eyebrow">🌾 Dülük Köyü</span>' +
-            '<h1>Köyün Dijital Buluşma Noktasına Hoş Geldiniz</h1>' +
-            '<p>Haberler, etkinlikler, çekilişler ve köyümüzün hikayesi — hepsi bir arada.</p>' +
+            '<span class="hero-eyebrow">🌾 Dülük Mahallesi</span>' +
+            "<h1>Dülük Mahallesi'nin Dijital Buluşma Noktasına Hoş Geldiniz</h1>" +
+            "<p>Dülük Mahallesi'nden haberler, etkinlikler, çekilişler ve köyümüzün hikayesi — hepsi bir arada.</p>" +
             "</section>" +
-            '<header class="screen-head"><h1>Haberler</h1><p>Dülük Köyü&rsquo;nden son haberler</p></header>' +
+            '<header class="screen-head"><h1>Haberler</h1><p>Dülük Mahallesi&rsquo;nden son haberler</p></header>' +
             '<div class="skeleton" style="height:220px;border-radius:16px"></div>' +
             '<div class="news-grid">' +
             '<div class="skeleton" style="height:130px;border-radius:16px"></div>'.repeat(4) +
@@ -50,9 +50,9 @@ function renderList(el) {
 
     el.innerHTML =
         '<section class="hero-banner">' +
-        '<span class="hero-eyebrow">🌾 Dülük Köyü</span>' +
-        '<h1>Köyün Dijital Buluşma Noktasına Hoş Geldiniz</h1>' +
-        '<p>Haberler, etkinlikler, çekilişler ve köyümüzün hikayesi — hepsi bir arada.</p>' +
+        '<span class="hero-eyebrow">🌾 Dülük Mahallesi</span>' +
+        "<h1>Dülük Mahallesi'nin Dijital Buluşma Noktasına Hoş Geldiniz</h1>" +
+        "<p>Dülük Mahallesi'nden haberler, etkinlikler, çekilişler ve köyümüzün hikayesi — hepsi bir arada.</p>" +
         "</section>" +
         '<header class="screen-head"><h1>Haberler</h1><p>Dülük Köyü&rsquo;nden son haberler</p></header>' +
         '<div class="tabs" role="tablist" aria-label="Haber kategorisi">' + chips + "</div>" +

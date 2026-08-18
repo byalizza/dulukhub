@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://dulukhub.com/sitemap.xml

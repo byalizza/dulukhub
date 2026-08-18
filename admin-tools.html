@@ -13,6 +13,7 @@
     .btn-row { display: flex; gap: 10px; }
     button { background: #06B6D4; color: #04262b; border: 0; border-radius: 10px; padding: 12px 20px; font-size: 14px; font-weight: 700; cursor: pointer; }
     button.secondary { background: #1f2937; color: #e5e7eb; }
+    button.danger { background: #7f1d1d; color: #fecaca; }
     button:disabled { opacity: 0.5; cursor: not-allowed; }
     #status { margin-top: 16px; font-size: 13px; line-height: 1.7; }
     .ok { color: #34d399; }
@@ -27,6 +28,7 @@
     <div class="btn-row">
         <button id="importBtn" type="button">Eksik Etkinlikleri Ekle</button>
         <button id="checkBtn" class="secondary" type="button">Kontrol Et (kopyaları temizle)</button>
+        <button id="logoutBtn" class="danger" type="button">Çıkış</button>
     </div>
     <div id="status"></div>
 </div>

@@ -7,7 +7,7 @@
    ============================================================ */
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
 import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -139,6 +139,15 @@ if (checkBtn) {
         checkBtn.disabled = false;
     });
 }
+
+$("#logoutBtn").addEventListener("click", async () => {
+    try {
+        await signOut(auth);
+        location.href = "./admin.html";
+    } catch (err) {
+        log("err", "Çıkış yapılamadı: " + esc(err.message));
+    }
+});
 
 function $(sel) { return document.querySelector(sel); }
 

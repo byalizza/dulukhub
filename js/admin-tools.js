@@ -39,7 +39,10 @@ const events = [
 
 const statusEl = $("#status");
 const btn = $("#importBtn");
+const checkBtn = $("#checkBtn");
 const authInfo = $("#authInfo");
+
+const log = (cls, msg) => statusEl.insertAdjacentHTML("beforeend", '<div class="' + cls + '">' + msg + "</div>");
 
 onAuthStateChanged(auth, (user) => {
     if (user) {
@@ -47,43 +50,43 @@ onAuthStateChanged(auth, (user) => {
     } else {
         authInfo.innerHTML = '<span class="err">Giriş yapılmamış. Önce ana siteden giriş yapın.</span>';
         btn.disabled = true;
+        if (checkBtn) checkBtn.disabled = true;
     }
 });
+
+async function cleanupDuplicates() {
+    const snap = await getDocs(collection(db, "events"));
+    const byTitle = {};
+    snap.docs.forEach((d) => {
+        const t = (d.data().title || "").trim().toLowerCase();
+        (byTitle[t] = byTitle[t] || []).push({ id: d.id, doc: d });
+    });
+
+    let removed = 0;
+    for (const t in byTitle) {
+        const list = byTitle[t];
+        if (list.length > 1) {
+            for (const x of list.slice(1)) {
+                try {
+                    await deleteDoc(doc(db, "events", x.id));
+                    removed++;
+                } catch (e) {
+                    log("err", "Kopya silinemedi: " + esc(e.message));
+                }
+            }
+            byTitle[t] = [list[0]];
+        }
+    }
+    return { byTitle, removed };
+}
 
 btn.addEventListener("click", async () => {
     btn.disabled = true;
     statusEl.innerHTML = "";
 
-    const log = (cls, msg) => statusEl.insertAdjacentHTML("beforeend", '<div class="' + cls + '">' + msg + "</div>");
-
     try {
-        const snap = await getDocs(collection(db, "events"));
-        const byTitle = {};
-        snap.docs.forEach((d) => {
-            const t = (d.data().title || "").trim().toLowerCase();
-            (byTitle[t] = byTitle[t] || []).push({ id: d.id, doc: d });
-        });
-
-        /* ---------- Kopyaları temizle: aynı addan 1 tane kalsın ---------- */
-
-        let removed = 0;
-        for (const t in byTitle) {
-            const list = byTitle[t];
-            if (list.length > 1) {
-                for (const x of list.slice(1)) {
-                    try {
-                        await deleteDoc(doc(db, "events", x.id));
-                        removed++;
-                    } catch (e) {
-                        log("err", "Kopya silinemedi: " + esc(e.message));
-                    }
-                }
-                byTitle[t] = [list[0]];
-            }
-        }
+        const { byTitle, removed } = await cleanupDuplicates();
         log("info", removed + " kopya etkinlik silindi.");
-
-        /* ---------- Ekle: yoksa ekle, varsa atla ---------- */
 
         let added = 0, skipped = 0;
 
@@ -120,6 +123,22 @@ btn.addEventListener("click", async () => {
 
     btn.disabled = false;
 });
+
+if (checkBtn) {
+    checkBtn.addEventListener("click", async () => {
+        checkBtn.disabled = true;
+        statusEl.innerHTML = "";
+
+        try {
+            const { removed } = await cleanupDuplicates();
+            log("info", "Kontrol tamam. " + removed + " kopya etkinlik silindi, her etkinlik tek kopya.");
+        } catch (err) {
+            log("err", "Hata: " + esc(err.message));
+        }
+
+        checkBtn.disabled = false;
+    });
+}
 
 function $(sel) { return document.querySelector(sel); }
 

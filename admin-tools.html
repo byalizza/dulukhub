@@ -10,7 +10,9 @@
     .card { max-width: 720px; margin: 0 auto; background: #111820; border: 1px solid #1f2937; border-radius: 14px; padding: 24px; }
     h1 { font-size: 20px; color: #06B6D4; margin: 0 0 6px; }
     p.sub { color: #9ca3af; margin: 0 0 18px; font-size: 13px; }
+    .btn-row { display: flex; gap: 10px; }
     button { background: #06B6D4; color: #04262b; border: 0; border-radius: 10px; padding: 12px 20px; font-size: 14px; font-weight: 700; cursor: pointer; }
+    button.secondary { background: #1f2937; color: #e5e7eb; }
     button:disabled { opacity: 0.5; cursor: not-allowed; }
     #status { margin-top: 16px; font-size: 13px; line-height: 1.7; }
     .ok { color: #34d399; }
@@ -22,7 +24,10 @@
 <div class="card">
     <h1>Etkinlik Toplu Yükleme</h1>
     <p class="sub" id="authInfo">Oturum kontrol ediliyor...</p>
-    <button id="importBtn" type="button">11 Etkinliği Ekle</button>
+    <div class="btn-row">
+        <button id="importBtn" type="button">Eksik Etkinlikleri Ekle</button>
+        <button id="checkBtn" class="secondary" type="button">Kontrol Et (kopyaları temizle)</button>
+    </div>
     <div id="status"></div>
 </div>
 <script type="module" src="./js/admin-tools.js"></script>

@@ -2092,17 +2092,42 @@
     z-index: 100;
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--color-primary);
+    gap: 8px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--color-text);
     background: var(--color-surface);
     border: 1px solid var(--color-border);
-    padding: 6px 12px;
+    padding: 6px 14px;
     border-radius: 999px;
     white-space: nowrap;
     cursor: default;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.wb-now {
+    color: var(--color-primary);
+    font-weight: 700;
+}
+
+.wb-sep {
+    color: var(--color-border);
+    font-weight: 400;
+}
+
+.wb-tom {
+    color: var(--color-text-soft);
+}
+
+@media (max-width: 899px) {
+    .weather-badge-global {
+        top: auto;
+        bottom: 72px;
+        right: 12px;
+        left: 12px;
+        justify-content: center;
+        font-size: 12px;
+    }
 }
 
 /* ============================================================

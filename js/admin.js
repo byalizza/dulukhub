@@ -109,12 +109,7 @@ function initLogin() {
 function showDashboard() {
     $("#loginScreen").hidden = true;
     $("#dashboard").hidden = false;
-    signInAnonymously(auth).then(() => {
-        loadDashboard();
-        initTabs();
-    }).catch(e => {
-        console.error("Auth hatası:", e);
-        alert("Kimlik doğrulanamadı. Firestore erişimi kısıtlı olabilir.");
+    waitForAuth().then(() => {
         loadDashboard();
         initTabs();
     });
@@ -122,6 +117,32 @@ function showDashboard() {
     $("#logoutBtn").addEventListener("click", () => {
         localStorage.removeItem(ADMIN_SESSION_KEY);
         location.reload();
+    });
+}
+
+function waitForAuth() {
+    return new Promise(resolve => {
+        const timeout = setTimeout(() => {
+            console.warn("Auth zaman aşımı, devam ediliyor...");
+            resolve();
+        }, 3000);
+
+        const unsub = auth.onAuthStateChanged(user => {
+            clearTimeout(timeout);
+            unsub();
+            if (user) {
+                console.log("Mevcut oturum:", user.uid);
+                resolve();
+            } else {
+                signInAnonymously(auth).then(() => {
+                    console.log("Anonymous giriş yapıldı");
+                    resolve();
+                }).catch(e => {
+                    console.warn("Anonymous auth başarısız, devam ediliyor:", e.message);
+                    resolve();
+                });
+            }
+        });
     });
 }
 

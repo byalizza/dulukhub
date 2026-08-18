@@ -368,10 +368,15 @@ function postToItem(doc) {
         title: d.title || "",
         description: d.description || "",
         category: d.category || "Güncel",
-        date: toISO(d.date) || toISO(d.createdAt) || new Date().toISOString(),
+        date: normDate(toISO(d.date)) || toISO(d.createdAt) || new Date().toISOString(),
         cover: d.imageUrl || "",
         content: d.content || []
     };
+}
+
+function normDate(v) {
+    if (typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v)) return v + "T12:00:00";
+    return v;
 }
 
 function photoToItem(doc) {

@@ -336,7 +336,7 @@ function renderAddForms() {
             <form id="addPost" class="add-form" novalidate>
                 <div class="fg"><label>Başlık *</label><input name="title" class="admin-input" required maxlength="150"></div>
                 <div class="fg"><label>Kısa açıklama</label><textarea name="description" class="admin-input" maxlength="500"></textarea></div>
-                <div class="fg"><label>Tarih (boşsa şimdi)</label><input name="date" class="admin-input" type="datetime-local"></div>
+                <div class="fg"><label>Tarih *</label><input name="date" class="admin-input" type="date" required></div>
                 <div class="fg"><label>Görsel URL</label><input name="imageUrl" class="admin-input" type="url" placeholder="https://..."></div>
                 <div class="fg"><label>İçerik (her satır paragraf)</label><textarea name="content" class="admin-input" maxlength="8000" rows="4"></textarea></div>
                 <button type="submit" class="admin-btn">Ekle</button>
@@ -398,10 +398,8 @@ function renderAddForms() {
     </div>`;
 
     $$(".add-form", el).forEach(form => {
-        console.log("[Admin] Form bağlanıyor:", form.id);
         form.addEventListener("submit", async (e) => {
             e.preventDefault();
-            console.log("[Admin] Submit tetiklendi:", form.id);
             const btn = form.querySelector('button[type="submit"]');
             btn.disabled = true;
             try { await handleAddSubmit(form.id, new FormData(form)); form.reset(); } catch (err) { alert("Hata: " + err.message); }
@@ -412,7 +410,6 @@ function renderAddForms() {
 
 async function handleAddSubmit(formId, fd) {
     const now = new Date().toISOString();
-    console.log("[Admin] formId:", formId, "date:", fd.get("date"), "now:", now);
     const data = {
         addPost: () => ({
             title: fd.get("title")?.trim(), description: fd.get("description")?.trim() || "",

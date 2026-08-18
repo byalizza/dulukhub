@@ -8,6 +8,8 @@ import { $, $$, esc, fmtDate, imgFallback, renderError } from "./app.js";
 import { listPosts } from "./firebase.js";
 import { trackNewsClick } from "./analytics.js";
 import { getCurrentUser } from "./auth.js";
+import { renderComments } from "./comments.js";
+import { renderWeatherWidget } from "./weather.js";
 
 let cachedPosts = [];
 let currentFilter = "Tümü";
@@ -56,9 +58,13 @@ function renderList(el) {
         "<h1>Dülük Mahallesi'nin Dijital Buluşma Noktasına Hoş Geldiniz</h1>" +
         "<p>Dülük Mahallesi'nden haberler, etkinlikler, çekilişler ve köyümüzün hikayesi — hepsi bir arada.</p>" +
         "</section>" +
+        '<div class="weather-widget-container" id="weatherWidget"></div>' +
         '<header class="screen-head"><h1>Haberler</h1><p>Dülük Köyü&rsquo;nden son haberler</p></header>' +
         '<div class="tabs" role="tablist" aria-label="Haber kategorisi">' + chips + "</div>" +
         '<div class="news-panel" id="newsPanel"></div>';
+
+    const weatherEl = el.querySelector("#weatherWidget");
+    if (weatherEl) renderWeatherWidget(weatherEl);
 
     $$(".tabs .chip", el).forEach((chip) => {
         chip.addEventListener("click", () => {
@@ -182,6 +188,11 @@ export async function renderNewsDetail(id) {
 
         const coverImg = $(".news-detail-cover img", el);
         if (coverImg) imgFallback(coverImg, "Haber görseli");
+
+        const commentsContainer = document.createElement("div");
+        commentsContainer.className = "news-comments-container";
+        el.querySelector(".news-detail").appendChild(commentsContainer);
+        renderComments(post.id, commentsContainer);
     } catch (err) {
         console.error("Haber detayı yüklenemedi:", err);
         renderError(el, "Haber");

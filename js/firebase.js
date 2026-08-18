@@ -95,7 +95,8 @@ const COLLECTIONS = {
     announcements: { demo: "announcements" },
     giveaways: { demo: "giveaways" },
     stories: { demo: "stories" },
-    heritage: { demo: "heritage" }
+    heritage: { demo: "heritage" },
+    comments: { demo: "comments" }
 };
 
 function getDemoList(name) {

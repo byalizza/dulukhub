@@ -5,6 +5,7 @@
 
 import { initRouter } from "./navigation.js";
 import { initAuth } from "./auth.js";
+import { initNotifications } from "./notifications.js";
 
 /* ---------- DOM yardımcıları ---------- */
 
@@ -190,6 +191,7 @@ function init() {
     initTheme();
     initAuth();
     initRouter();
+    initNotifications();
 
     const splash = $("#splash");
     setTimeout(() => splash.classList.add("done"), 300);

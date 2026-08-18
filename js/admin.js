@@ -32,6 +32,13 @@ const $ = (sel, ctx) => (ctx || document).querySelector(sel);
 const $$ = (sel, ctx) => [...(ctx || document).querySelectorAll(sel)];
 function esc(s) { const d = document.createElement("div"); d.textContent = s || ""; return d.innerHTML; }
 
+function parseLocalDT(val) {
+    if (!val) return "";
+    const m = /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})/.exec(String(val));
+    if (!m) return "";
+    return new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]).toISOString();
+}
+
 function fmtDate(iso) {
     if (!iso) return "-";
     const d = new Date(iso);
@@ -430,13 +437,17 @@ async function handleAddSubmit(formId, fd) {
             title: fd.get("title")?.trim(), date: fd.get("date"), time: fd.get("time") || "",
             location: fd.get("location")?.trim() || "", description: fd.get("description")?.trim() || "", createdAt: now
         }),
-        addGiveaway: () => ({
-            title: fd.get("title")?.trim(), prize: fd.get("prize")?.trim(),
-            description: fd.get("description")?.trim() || "",
-            startDate: fd.get("startDate") ? new Date(fd.get("startDate")).toISOString() : "",
-            endDate: new Date(fd.get("endDate")).toISOString(),
-            target: Number(fd.get("target")) || 50, participants: 0, createdAt: now
-        }),
+        addGiveaway: () => {
+            const endVal = fd.get("endDate");
+            if (!endVal) throw new Error("Bitiş tarihi seçmelisiniz.");
+            return {
+                title: fd.get("title")?.trim(), prize: fd.get("prize")?.trim(),
+                description: fd.get("description")?.trim() || "",
+                startDate: parseLocalDT(fd.get("startDate")),
+                endDate: parseLocalDT(endVal),
+                target: Number(fd.get("target")) || 50, participants: 0, createdAt: now
+            };
+        },
         addStory: () => ({
             title: fd.get("title")?.trim(), content: fd.get("content")?.trim(),
             author: fd.get("author")?.trim() || "", likes: 0, date: now, createdAt: now

@@ -1,9 +1,9 @@
 /* ============================================================
    Dülük Hub — stories.js
-   Köy hikayeleri: nesilden nesile aktarılan hatıralar.
+   Köy hikayeleri: kart önizleme + tıklayınca tam metin modalı.
    ============================================================ */
 
-import { $, $$, esc, toast, fmtDate, imgFallback, initials, renderError } from "./app.js";
+import { $, $$, esc, toast, fmtDate, imgFallback, initials, openModal, closeModal, renderError } from "./app.js";
 import { listStories } from "./firebase.js";
 import { getCurrentUser } from "./auth.js";
 
@@ -60,7 +60,16 @@ export async function renderStories() {
             "</div>";
 
         $$("[data-story-id]", el).forEach((btn) => {
-            btn.addEventListener("click", () => likeStory(btn.dataset.storyId, btn));
+            btn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                likeStory(btn.dataset.storyId, btn);
+            });
+        });
+        $$("[data-open-story]", el).forEach((card) => {
+            card.addEventListener("click", () => {
+                const s = cachedStories.find((x) => x.id === card.dataset.openStory);
+                if (s) openStoryModal(s);
+            });
         });
         $$("[data-story-img]", el).forEach((img) => imgFallback(img, "Hikâye görseli"));
     } catch (err) {
@@ -69,11 +78,17 @@ export async function renderStories() {
     }
 }
 
+function previewText(text, maxLen) {
+    if (!text) return "";
+    const flat = text.replace(/\n+/g, " ").trim();
+    return flat.length > maxLen ? flat.slice(0, maxLen).trimEnd() + "…" : flat;
+}
+
 function storyCard(s) {
     const liked = isLiked(s.id);
     const author = s.author || "Köylümüz";
     return (
-        '<article class="card story-card">' +
+        '<article class="card story-card" data-open-story="' + encodeURIComponent(s.id) + '" tabindex="0" role="button" aria-label="' + esc(s.title) + ' — oku" style="cursor:pointer">' +
         '<div class="story-meta story-author-line" style="margin-bottom:8px">' +
         '<span class="story-author-avatar">' + esc(initials(author)) + "</span>" +
         "<strong>" + esc(author) + "</strong>" +
@@ -81,15 +96,42 @@ function storyCard(s) {
         "</div>" +
         "<h3>" + esc(s.title) + "</h3>" +
         (s.imageUrl ? '<img class="story-img" src="' + esc(s.imageUrl) + '" alt="' + esc(s.title) + '" loading="lazy" data-story-img="' + encodeURIComponent(s.id) + '">' : "") +
-        '<p class="content">' + esc(s.content || "") + "</p>" +
+        '<p class="content" style="margin:0 0 10px">' + esc(previewText(s.content, 200)) + "</p>" +
         '<div class="story-meta">' +
         '<button type="button" class="btn btn-sm ' + (liked ? "btn-primary" : "btn-ghost") + '" data-story-id="' + encodeURIComponent(s.id) + '">' +
         '<svg class="heart" viewBox="0 0 24 24" fill="' + (liked ? "currentColor" : "none") + '" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.5-1.6 3-3.5 3-5.5A5.5 5.5 0 0 0 12 5.5 5.5 5.5 0 0 0 2 8.5c0 2 1.5 3.9 3 5.5l7 7Z"/></svg>' +
         (liked ? "Beğendin" : "Beğen") + " (" + esc(Number(s.likes) + (liked ? 1 : 0)) + ")" +
         "</button>" +
+        '<span class="btn btn-sm btn-ghost" style="pointer-events:none">Devamını oku →</span>' +
         "</div>" +
         "</article>"
     );
+}
+
+function openStoryModal(s) {
+    const author = s.author || "Köylümüz";
+    const paragraphs = (s.content || "").split(/\n+/).filter((p) => p.trim());
+    const body = paragraphs.length
+        ? paragraphs.map((p) => "<p style=\"margin:0 0 12px;line-height:1.8\">" + esc(p) + "</p>").join("")
+        : "<p style=\"line-height:1.8\">" + esc(s.content || "") + "</p>";
+
+    openModal({
+        title: s.title,
+        content:
+            '<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;color:var(--color-muted);font-size:13px">' +
+            '<span class="story-author-avatar">' + esc(initials(author)) + "</span>" +
+            "<strong>" + esc(author) + "</strong>" +
+            "<span>•</span><span>" + fmtDate(s.date) + "</span>" +
+            "</div>" +
+            (s.imageUrl ? '<img src="' + esc(s.imageUrl) + '" alt="' + esc(s.title) + '" style="width:100%;border-radius:12px;margin-bottom:14px">' : "") +
+            body +
+            '<div style="margin-top:18px;display:flex;justify-content:flex-end">' +
+            '<button type="button" class="btn btn-primary btn-sm js-story-close">Kapat</button></div>',
+        onMount: (dialog) => {
+            const c = dialog.querySelector(".js-story-close");
+            if (c) c.addEventListener("click", () => closeModal());
+        }
+    });
 }
 
 function likeStory(id, btn) {

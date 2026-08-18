@@ -33,11 +33,7 @@ const $ = (sel) => document.querySelector(sel);
 /* ---------- Login ---------- */
 
 function initLogin() {
-    const saved = localStorage.getItem(ADMIN_SESSION_KEY);
-    if (saved === "1") {
-        showDashboard();
-        return;
-    }
+    localStorage.removeItem(ADMIN_SESSION_KEY);
 
     const btn = $("#loginBtn");
     const input = $("#adminCode");
@@ -63,6 +59,10 @@ function showDashboard() {
     $("#dashboard").hidden = false;
     loadDashboard();
     $("#refreshBtn").addEventListener("click", loadDashboard);
+    $("#logoutBtn").addEventListener("click", () => {
+        localStorage.removeItem(ADMIN_SESSION_KEY);
+        location.reload();
+    });
 }
 
 /* ---------- Dashboard ---------- */
@@ -85,33 +85,43 @@ function timeAgo(iso) {
     return Math.floor(diff / 86400000) + " gün önce";
 }
 
-async function loadDashboard() {
+async function safeGetDocs(queryOrCollection) {
     try {
-        const [usersSnap, postsSnap, analyticsSnap] = await Promise.all([
-            getDocs(collection(db, "users")),
-            getDocs(collection(db, "posts")),
-            getDocs(query(collection(db, "analytics"), orderBy("timestamp", "desc"), limit(200)))
-        ]);
-
-        const users = usersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-        const posts = postsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-        const events = analyticsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-
-        const now = Date.now();
-        const fiveMinAgo = now - 5 * 60 * 1000;
-        const activeUsers = users.filter(u => u.lastSeen && new Date(u.lastSeen).getTime() > fiveMinAgo);
-
-        $("#statUsers").textContent = users.length;
-        $("#statActive").textContent = activeUsers.length;
-        $("#statPosts").textContent = posts.length;
-        $("#statClicks").textContent = events.filter(e => e.type === "click").length;
-
-        renderTopNews(posts);
-        renderUsers(users);
-        renderActivity(events, users);
+        return await getDocs(queryOrCollection);
     } catch (e) {
-        console.error("Dashboard yükleme hatası:", e);
+        console.warn("Firestore okuma hatası:", e.message);
+        return { docs: [] };
     }
+}
+
+async function loadDashboard() {
+    $("#statUsers").textContent = "...";
+    $("#statActive").textContent = "...";
+    $("#statPosts").textContent = "...";
+    $("#statClicks").textContent = "...";
+
+    const [usersSnap, postsSnap, analyticsSnap] = await Promise.all([
+        safeGetDocs(collection(db, "users")),
+        safeGetDocs(collection(db, "posts")),
+        safeGetDocs(query(collection(db, "analytics"), orderBy("timestamp", "desc"), limit(200)))
+    ]);
+
+    const users = usersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const posts = postsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const events = analyticsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    const now = Date.now();
+    const fiveMinAgo = now - 5 * 60 * 1000;
+    const activeUsers = users.filter(u => u.lastSeen && new Date(u.lastSeen).getTime() > fiveMinAgo);
+
+    $("#statUsers").textContent = users.length;
+    $("#statActive").textContent = activeUsers.length;
+    $("#statPosts").textContent = posts.length;
+    $("#statClicks").textContent = events.filter(e => e.type === "click").length;
+
+    renderTopNews(posts);
+    renderUsers(users);
+    renderActivity(events, users);
 }
 
 function renderTopNews(posts) {

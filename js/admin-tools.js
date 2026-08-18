@@ -35,6 +35,34 @@ let pending = [];
 let approved = new Set();
 let skipped = new Set();
 
+const PREPARED_STORIES = [
+    {
+        cat: "Köy Efsanesi",
+        title: "Dülük Baba ve Ejderha Efsanesi (Davud-i Ejder)",
+        content: "Köyün en ünlü ve en köklü efsanesidir. Söylenceye göre, çok eski zamanlarda Dülük dağlarında insanlara musallat olan devasa bir ejderha yaşarmış. Bölge halkına korku salan bu ejderhayı yenmek için Davud-i Ejder adında bir eren (Dülük Baba) ortaya çıkar. Günlerce süren efsanevi bir mücadelenin ardından Dülük Baba ejderhayı alt eder ancak kendisi de bu savaşta şehit düşer.\n\nKöydeki Yeri: Bugün Dülük Baba Tepesi olarak bilinen yerin ve oradaki türbenin isminin bu destansı olaydan geldiğine inanılır. Köylüler arasında bu tepenin her zaman koruyucu ve tılsımlı bir enerjisi olduğu anlatılır."
+    },
+    {
+        cat: "Köy Efsanesi",
+        title: "Gaziantep Kalesi'ne Uzanan Gizli Tüneller",
+        content: "Dülük yeraltı şehrinin (Doliche) devasa boyutları, köyde nesillerdir anlatılan abartılı ama heyecan verici bir şehir efsanesi doğurmuştur. Köyün yaşlılarının anlattıklarına göre, bu yeraltı mağaralarından ve tünellerinden girildiğinde kilometrelerce yerin altından yürüyerek karanlıkta doğrudan Gaziantep Kalesi'nin içine çıkmak mümkündür.\n\nKöydeki Yeri: Çocukların \"kaybolursunuz\" diye mağaraların derinliklerine inmesinin yasaklanması, bu efsaneyi köy anılarında hep taze, ürkütücü ve gizemli tutmuştur."
+    },
+    {
+        cat: "Köy Efsanesi",
+        title: "Yağmur Sonrası Parlayan Roma Altınları",
+        content: "Dülük, tarihi eser açısından o kadar zengindir ki, köydeki hemen hemen her ailenin bir \"yağmur sonrası\" anısı vardır. Özellikle şiddetli bahar yağmurlarından sonra toprak kaydığında veya tarlalar sürüldüğünde, Roma dönemine ait sikkelerin (köylülerin tabiriyle \"parlayan taşlar\" veya \"eski paralar\") çamurun içinde bir anda belirdiği anlatılır.\n\nKöydeki Yeri: Bu durum, yıllarca bölgede kulaktan kulağa yayılan defineci hikayelerinin ve \"altın küpü bulmuşlar\" tarzı efsanelerin ana kaynağı olmuştur."
+    },
+    {
+        cat: "Köy Efsanesi",
+        title: "Şarklı Keber Mağarası'nın Gizemli Yankıları",
+        content: "Dünyanın en eski yeraltı tapınaklarından biri olan Mitras Tapınağı ve çevresindeki mağaralar, köyün mistik anılarının merkezindedir. Rüzgarlı gecelerde veya dolunayda mağaraların içinden garip uğultular, eski dillerde fısıltılar veya ayin sesleri geldiği iddia edilir.\n\nKöydeki Yeri: Aslında bu seslerin rüzgarın kayalardaki deliklerden geçerken çıkardığı doğal akustik bir olay olduğu bilinse de, gece vakti o bölgeden geçen köylülerin anılarında burası \"büyülü\" veya \"tekin olmayan\" yerler olarak kazınmıştır."
+    },
+    {
+        cat: "Köy Hikayesi",
+        title: "Eski Dülük Düğünleri ve Taş Evlerin Ruhu",
+        content: "Efsaneler bir yana, köyün yakın dönem yaşantısına dair en güzel anılar taş evlerin avlularında kurulan o eski düğünlerdir. Günlerce süren, davulların ve zurnaların Dülük Tepesi'nde yankılandığı, bütün köyün bir araya gelip imece usulü devasa kazanlarda yemekler yaptığı o eski köy düğünleri, bölgenin kültürel hafızasının en sıcak kısmıdır.\n\nKöydeki Yeri: Dülük'ün yerlileri, o eski taş evlerin serin avlularındaki muhabbetleri ve o büyük dayanışma ruhunu her zaman büyük bir özlemle anar."
+    }
+];
+
 onAuthStateChanged(auth, (user) => {
     if (user) {
         $("#authInfo").textContent = "Giriş: " + (user.email || user.uid) + " — bekleyen içerikler yükleniyor...";
@@ -58,6 +86,18 @@ async function loadPending() {
             .map((d) => ({ id: d.id, ...d.data() }))
             .filter((h) => h.title && !storyTitles.has(h.title.trim().toLowerCase()))
             .sort((a, b) => (a.date || "").localeCompare(b.date || ""));
+
+        PREPARED_STORIES.forEach((s, idx) => {
+            if (!storyTitles.has(s.title.trim().toLowerCase())) {
+                pending.push({
+                    id: "prepared-" + idx,
+                    title: s.title,
+                    description: s.content,
+                    cat: s.cat,
+                    era: "Hazır içerik"
+                });
+            }
+        });
 
         renderList();
     } catch (err) {
@@ -86,7 +126,7 @@ function renderList() {
         return (
             '<div class="item">' +
             '<div class="meta">' +
-            '<span class="badge badge-cat">Tarihi Eser → Hikaye</span>' +
+            '<span class="badge badge-cat">' + esc(h.cat || "Tarihi Eser → Hikaye") + "</span>" +
             '<span class="badge badge-date">' + esc(h.era || h.date || "") + "</span>" +
             state +
             "</div>" +
@@ -115,10 +155,13 @@ async function approveOne(i) {
     const h = pending[i];
     if (!h || approved.has(h.id)) return;
 
+    const isPrepared = typeof h.id === "string" && h.id.startsWith("prepared-");
+    const content = isPrepared ? (h.description || "") : (h.era ? h.era + ". " : "") + (h.description || "");
+
     try {
         await addDoc(collection(db, "stories"), {
             title: h.title,
-            content: (h.era ? h.era + ". " : "") + (h.description || ""),
+            content: content,
             author: "Dülük Hub",
             likes: 0,
             date: h.date || new Date().toISOString(),
@@ -144,6 +187,15 @@ async function deleteOne(i) {
     const h = pending[i];
     if (!h) return;
     if (!confirm('"' + h.title + '" tamamen silinsin mi?')) return;
+
+    const isPrepared = typeof h.id === "string" && h.id.startsWith("prepared-");
+
+    if (isPrepared) {
+        pending = pending.filter((x) => x.id !== h.id);
+        log("ok", "Silindi: " + esc(h.title));
+        renderList();
+        return;
+    }
 
     try {
         await deleteDoc(doc(db, "heritage", h.id));
@@ -185,10 +237,12 @@ approveAllBtn.addEventListener("click", async () => {
     for (let i = 0; i < pending.length; i++) {
         const h = pending[i];
         if (approved.has(h.id) || skipped.has(h.id)) continue;
+        const isPrepared = typeof h.id === "string" && h.id.startsWith("prepared-");
+        const content = isPrepared ? (h.description || "") : (h.era ? h.era + ". " : "") + (h.description || "");
         try {
             await addDoc(collection(db, "stories"), {
                 title: h.title,
-                content: (h.era ? h.era + ". " : "") + (h.description || ""),
+                content: content,
                 author: "Dülük Hub",
                 likes: 0,
                 date: h.date || new Date().toISOString(),

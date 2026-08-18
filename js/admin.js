@@ -398,8 +398,10 @@ function renderAddForms() {
     </div>`;
 
     $$(".add-form", el).forEach(form => {
+        console.log("[Admin] Form bağlanıyor:", form.id);
         form.addEventListener("submit", async (e) => {
             e.preventDefault();
+            console.log("[Admin] Submit tetiklendi:", form.id);
             const btn = form.querySelector('button[type="submit"]');
             btn.disabled = true;
             try { await handleAddSubmit(form.id, new FormData(form)); form.reset(); } catch (err) { alert("Hata: " + err.message); }

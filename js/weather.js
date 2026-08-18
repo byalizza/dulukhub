@@ -20,20 +20,25 @@ export async function renderWeatherBadge() {
     const el = document.querySelector("#weatherBadgeGlobal");
     if (!el) return;
 
-    try {
-        const url = "https://api.open-meteo.com/v1/forecast" +
-            "?latitude=" + LAT +
-            "&longitude=" + LON +
-            "&current=temperature_2m,weather_code" +
-            "&timezone=Europe/Istanbul";
+    async function update() {
+        try {
+            const url = "https://api.open-meteo.com/v1/forecast" +
+                "?latitude=" + LAT +
+                "&longitude=" + LON +
+                "&current=temperature_2m,weather_code" +
+                "&timezone=Europe/Istanbul";
 
-        const res = await fetch(url);
-        if (!res.ok) return;
-        const data = await res.json();
-        const temp = Math.round(data.current.temperature_2m);
-        const icon = WMO_ICONS[data.current.weather_code] || "🌡️";
+            const res = await fetch(url);
+            if (!res.ok) return;
+            const data = await res.json();
+            const temp = Math.round(data.current.temperature_2m);
+            const icon = WMO_ICONS[data.current.weather_code] || "🌡️";
 
-        el.textContent = icon + " " + temp + "°C";
-        el.title = "Dülük — anlık sıcaklık";
-    } catch (_) {}
+            el.textContent = icon + " " + temp + "°C";
+            el.title = "Dülük — anlık sıcaklık";
+        } catch (_) {}
+    }
+
+    update();
+    setInterval(update, 10000);
 }

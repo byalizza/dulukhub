@@ -93,7 +93,7 @@ function renderItems(panel) {
         '<img src="' + esc(featured.cover) + '" alt="' + esc(featured.title) + '" width="960" height="540">' +
         "</div>" +
         '<div class="featured-body">' +
-        '<div class="news-card-meta"><span class="badge badge-accent">' + esc(featured.category || "Güncel") + "</span><time>" + fmtDate(featured.date) + "</time></div>" +
+        '<div class="news-card-meta"><time>' + fmtDate(featured.date) + "</time></div>" +
         "<h2>" + esc(featured.title) + "</h2>" +
         "<p>" + esc(featured.description) + "</p>" +
         '<span class="featured-more">Devamını oku</span>' +
@@ -116,7 +116,7 @@ function newsCard(p) {
         '<img src="' + esc(p.cover) + '" alt="' + esc(p.title) + '" loading="lazy" width="192" height="192">' +
         "</div>" +
         '<div class="news-card-body">' +
-        '<div class="news-card-meta"><span class="badge">' + esc(p.category || "Güncel") + "</span><time>" + fmtDate(p.date) + "</time></div>" +
+        '<div class="news-card-meta"><time>' + fmtDate(p.date) + "</time></div>" +
         "<h3>" + esc(p.title) + "</h3>" +
         "<p>" + esc(p.description) + "</p>" +
         "</div></button>"
@@ -164,7 +164,7 @@ export async function renderNewsDetail(id) {
             '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>' +
             "Haberler</button>" +
             "<h1>" + esc(post.title) + "</h1>" +
-            '<div class="news-detail-meta"><span class="badge">' + esc(post.category || "Güncel") + '</span><time datetime="' + esc(post.date) + '">' + fmtDate(post.date) + "</time></div>" +
+            '<div class="news-detail-meta"><time datetime="' + esc(post.date) + '">' + fmtDate(post.date) + "</time></div>" +
             '<div class="news-detail-cover">' +
             '<img src="' + esc(post.cover) + '" alt="' + esc(post.title) + '" width="960" height="540">' +
             "</div>" +

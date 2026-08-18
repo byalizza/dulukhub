@@ -5,23 +5,23 @@
 
 :root {
     --font: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
-    --color-primary: #F2B84B;
-    --color-primary-hover: #FAC968;
-    --color-primary-soft: rgba(242, 184, 75, 0.15);
-    --color-accent: #D4A373;
-    --color-accent-soft: rgba(212, 163, 115, 0.18);
-    --color-bg: #0B0D0F;
-    --color-surface: #14171C;
-    --color-surface-2: #1E2229;
-    --color-text: #F2F4F7;
-    --color-text-soft: #C8CDD6;
-    --color-muted: #9BA3AF;
-    --color-border: #2A2F38;
-    --color-danger: #F5655E;
-    --color-success: #3DD68C;
-    --color-blue: #58A6FF;
-    --color-teal: #2ECCB8;
-    --color-purple: #9D8CFF;
+    --color-primary: #06B6D4;
+    --color-primary-hover: #22D3EE;
+    --color-primary-soft: rgba(6, 182, 212, 0.15);
+    --color-accent: #A78BFA;
+    --color-accent-soft: rgba(167, 139, 250, 0.18);
+    --color-bg: #0A0E14;
+    --color-surface: #111820;
+    --color-surface-2: #1A2030;
+    --color-text: #F0F4F8;
+    --color-text-soft: #B8C4D0;
+    --color-muted: #6B7A8D;
+    --color-border: #1E2A3A;
+    --color-danger: #F43F5E;
+    --color-success: #10B981;
+    --color-blue: #3B82F6;
+    --color-teal: #14B8A6;
+    --color-purple: #A855F7;
     --radius: 16px;
     --shadow: 0 10px 34px rgba(0, 0, 0, 0.4);
 }
@@ -116,7 +116,7 @@ body {
     border: none;
     border-radius: 12px;
     background: var(--color-primary);
-    color: #241907;
+    color: #0A0E14;
     font-family: var(--font);
     font-size: 15px;
     font-weight: 700;
@@ -338,7 +338,7 @@ body {
 }
 
 .nav-btn:hover { border-color: var(--color-primary); color: var(--color-text); }
-.nav-btn.active { background: var(--color-primary); color: #241907; border-color: var(--color-primary); }
+.nav-btn.active { background: var(--color-primary); color: #0A0E14; border-color: var(--color-primary); }
 
 .dash-actions {
     display: flex;
@@ -368,7 +368,7 @@ body {
 }
 
 .chip:hover { border-color: var(--color-primary); color: var(--color-text); }
-.chip.active { background: var(--color-primary); color: #241907; border-color: var(--color-primary); }
+.chip.active { background: var(--color-primary); color: #0A0E14; border-color: var(--color-primary); }
 
 /* ---------- Forms ---------- */
 

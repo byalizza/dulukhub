@@ -39,7 +39,7 @@
 
 .btn-primary {
     background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
-    color: #241907;
+    color: #0A0E14;
     box-shadow: 0 6px 18px rgba(242, 184, 75, 0.3);
 }
 
@@ -70,7 +70,7 @@
 
 .btn-accent {
     background: linear-gradient(135deg, var(--color-accent) 0%, #C0854A 100%);
-    color: #241907;
+    color: #0A0E14;
     box-shadow: 0 6px 18px rgba(212, 163, 115, 0.4);
 }
 
@@ -141,7 +141,7 @@
 
 .tabs .chip.active {
     background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
-    color: #241907;
+    color: #0A0E14;
     box-shadow: 0 4px 14px rgba(242, 184, 75, 0.35);
 }
 
@@ -162,9 +162,10 @@
     margin: -6px -4px 18px;
     padding: 30px 24px;
     border-radius: 20px;
-    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 55%, var(--color-accent) 140%);
-    color: #241907;
-    box-shadow: 0 10px 34px rgba(242, 184, 75, 0.22);
+    background: linear-gradient(135deg, #06B6D4 0%, #8B5CF6 50%, #A855F7 100%);
+    color: #fff;
+    box-shadow: 0 10px 34px rgba(6, 182, 212, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .hero-banner::before,
@@ -172,7 +173,7 @@
     content: "";
     position: absolute;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.12);
     pointer-events: none;
 }
 
@@ -196,11 +197,12 @@
     font-weight: 800;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: #241907;
-    background: rgba(255, 255, 255, 0.3);
+    color: #fff;
+    background: rgba(255, 255, 255, 0.18);
     padding: 5px 13px;
     border-radius: 999px;
     margin-bottom: 12px;
+    backdrop-filter: blur(8px);
 }
 
 .hero-banner h1 {
@@ -208,7 +210,7 @@
     font-size: 28px;
     font-weight: 700;
     line-height: 1.18;
-    color: #241907;
+    color: #fff;
 }
 
 .hero-banner p {
@@ -468,7 +470,7 @@
 .chip.active {
     background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
     border-color: transparent;
-    color: #241907;
+    color: #0A0E14;
     box-shadow: 0 4px 14px rgba(242, 184, 75, 0.35);
 }
 
@@ -718,7 +720,7 @@
     height: 58px;
     border-radius: 14px;
     background: linear-gradient(150deg, var(--color-primary) 0%, var(--color-secondary) 100%);
-    color: #241907;
+    color: #0A0E14;
     box-shadow: 0 5px 14px rgba(242, 184, 75, 0.28);
 }
 
@@ -737,7 +739,7 @@
 
 .event-date.accent {
     background: linear-gradient(150deg, var(--color-accent) 0%, #C0854A 100%);
-    color: #241907;
+    color: #0A0E14;
     box-shadow: 0 5px 14px rgba(212, 163, 115, 0.4);
 }
 
@@ -775,7 +777,7 @@
 
 .event-chip.is-today {
     background: var(--color-primary);
-    color: #241907;
+    color: #0A0E14;
 }
 
 .event-chip.is-tomorrow {
@@ -1253,7 +1255,7 @@
 
 .toast.success {
     background: var(--color-primary);
-    color: #241907;
+    color: #0A0E14;
 }
 
 .toast.error {

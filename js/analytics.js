@@ -86,6 +86,37 @@ export async function updateLastSeen(uid) {
     }
 }
 
+/* ---------- Sosyal medya tıklama ---------- */
+
+export async function trackSocialClick(platform, userId) {
+    if (!platform) return;
+    try {
+        if (await isLive()) {
+            const ref = doc(db, "socialClicks", platform);
+            await updateDoc(ref, { count: increment(1) }).catch(async () => {
+                await addDoc(collection(db, "socialClicks"), {
+                    platform,
+                    count: 1,
+                    timestamp: serverTimestamp()
+                }).catch(() => {});
+            });
+            await addDoc(collection(db, "analytics"), {
+                type: "social",
+                platform,
+                userId: userId || "anon",
+                timestamp: serverTimestamp()
+            }).catch(() => {});
+        } else {
+            const local = readLocal();
+            local.socialClicks = local.socialClicks || {};
+            local.socialClicks[platform] = (local.socialClicks[platform] || 0) + 1;
+            writeLocal(local);
+        }
+    } catch (e) {
+        console.warn("Sosyal medya tıklaması kaydedilemedi:", e);
+    }
+}
+
 /* ---------- Admin paneli okuma fonksiyonları ---------- */
 
 export async function getAnalyticsOverview() {

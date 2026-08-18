@@ -20,7 +20,7 @@
             <img src="./assets/logo.png" alt="" width="56" height="56">
             <h1>Dülük Hub <span>Yönetim</span></h1>
         </div>
-        <p class="login-desc">Analiz ve yönetim paneline erişim için yetki kodunu girin.</p>
+        <p class="login-desc">Yönetim paneline erişim için kodu girin.</p>
         <input id="adminCode" class="admin-input" type="password" inputmode="numeric" maxlength="8" placeholder="••••••" autocomplete="off">
         <p id="adminError" class="admin-error" hidden></p>
         <button id="loginBtn" class="admin-btn">Giriş Yap</button>
@@ -30,42 +30,87 @@
 <div id="dashboard" class="dashboard" hidden>
     <header class="dash-header">
         <div class="dash-brand">
-            <img src="./assets/logo.png" alt="" width="32" height="32">
-            <h1>Dülük Hub <span>Yönetim</span></h1>
+            <img src="./assets/logo.png" alt="" width="28" height="28">
+            <span>Dülük Hub <span class="gold">Yönetim</span></span>
         </div>
-        <button id="refreshBtn" class="admin-btn-sm" type="button">Yenile</button>
-        <button id="logoutBtn" class="admin-btn-sm" type="button" style="border-color:var(--color-danger);color:var(--color-danger)">Çıkış</button>
+        <nav class="dash-nav">
+            <button class="nav-btn active" data-tab="stats">Genel Bakış</button>
+            <button class="nav-btn" data-tab="users">Kullanıcılar</button>
+            <button class="nav-btn" data-tab="content">İçerikler</button>
+            <button class="nav-btn" data-tab="add">+ İçerik Ekle</button>
+            <button class="nav-btn" data-tab="password">Şifre</button>
+        </nav>
+        <div class="dash-actions">
+            <button id="refreshBtn" class="admin-btn-sm" type="button">Yenile</button>
+            <button id="logoutBtn" class="admin-btn-sm danger" type="button">Çıkış</button>
+        </div>
     </header>
 
-    <div class="dash-stats" id="statsContainer">
-        <div class="stat-card"><span class="stat-num" id="statUsers">-</span><span class="stat-label">Kayıtlı Kullanıcı</span></div>
-        <div class="stat-card accent"><span class="stat-num" id="statActive">-</span><span class="stat-label">Aktif (5 dk)</span></div>
-        <div class="stat-card blue"><span class="stat-num" id="statPosts">-</span><span class="stat-label">Haber Sayısı</span></div>
-        <div class="stat-card teal"><span class="stat-num" id="statClicks">-</span><span class="stat-label">Toplam Tıklama</span></div>
-    </div>
-
-    <div class="dash-grid">
-        <section class="dash-section">
-            <h2>En Çok Tıklanan Haberler</h2>
-            <div id="topNews" class="dash-list">
-                <div class="dash-loading">Yükleniyor...</div>
-            </div>
-        </section>
-
-        <section class="dash-section">
-            <h2>Kayıtlı Kullanıcılar</h2>
-            <div id="userList" class="dash-list">
-                <div class="dash-loading">Yükleniyor...</div>
-            </div>
-        </section>
-    </div>
-
-    <section class="dash-section full-width">
-        <h2>Son Aktiviteler</h2>
-        <div id="activityList" class="dash-list">
-            <div class="dash-loading">Yükleniyor...</div>
+    <!-- Genel Bakış -->
+    <div id="tabStats" class="tab-panel">
+        <div class="dash-stats">
+            <div class="stat-card"><span class="stat-num" id="statUsers">-</span><span class="stat-label">Kullanıcı</span></div>
+            <div class="stat-card accent"><span class="stat-num" id="statActive">-</span><span class="stat-label">Aktif (5 dk)</span></div>
+            <div class="stat-card blue"><span class="stat-num" id="statPosts">-</span><span class="stat-label">Haber</span></div>
+            <div class="stat-card teal"><span class="stat-num" id="statClicks">-</span><span class="stat-label">Haber Tıklama</span></div>
+            <div class="stat-card purple"><span class="stat-num" id="statSocial">-</span><span class="stat-label">Sosyal Tıklama</span></div>
         </div>
-    </section>
+        <div class="dash-grid">
+            <section class="dash-section">
+                <h2>En Çok Tıklanan Haberler</h2>
+                <div id="topNews" class="dash-list"><div class="dash-loading">Yükleniyor...</div></div>
+            </section>
+            <section class="dash-section">
+                <h2>Son Aktiviteler</h2>
+                <div id="activityList" class="dash-list"><div class="dash-loading">Yükleniyor...</div></div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Kullanıcılar -->
+    <div id="tabUsers" class="tab-panel" hidden>
+        <section class="dash-section full-width">
+            <h2>Kayıtlı Kullanıcılar</h2>
+            <div id="userList" class="dash-list"><div class="dash-loading">Yükleniyor...</div></div>
+        </section>
+    </div>
+
+    <!-- İçerikler -->
+    <div id="tabContent" class="tab-panel" hidden>
+        <section class="dash-section full-width">
+            <h2>Mevcut İçerikler</h2>
+            <div class="content-tabs">
+                <button class="chip active" data-ctab="posts">Haberler</button>
+                <button class="chip" data-ctab="announcements">Duyurular</button>
+                <button class="chip" data-ctab="events">Etkinlikler</button>
+                <button class="chip" data-ctab="giveaways">Çekilişler</button>
+                <button class="chip" data-ctab="stories">Hikâyeler</button>
+                <button class="chip" data-ctab="heritage">Tarihi Eserler</button>
+                <button class="chip" data-ctab="photos">Fotoğraflar</button>
+            </div>
+            <div id="contentList" class="dash-list"><div class="dash-loading">Yükleniyor...</div></div>
+        </section>
+    </div>
+
+    <!-- İçerik Ekle -->
+    <div id="tabAdd" class="tab-panel" hidden>
+        <div class="add-forms" id="addForms"></div>
+    </div>
+
+    <!-- Şifre Değiştir -->
+    <div id="tabPassword" class="tab-panel" hidden>
+        <section class="dash-section" style="max-width:480px">
+            <h2>Şifre Değiştir</h2>
+            <form id="pwForm" novalidate>
+                <div class="fg"><label>Mevcut Şifre</label><input id="pwOld" class="admin-input" type="password" required></div>
+                <div class="fg"><label>Yeni Şifre</label><input id="pwNew" class="admin-input" type="password" minlength="6" required></div>
+                <div class="fg"><label>Tekrar</label><input id="pwRepeat" class="admin-input" type="password" required></div>
+                <p id="pwError" class="admin-error" hidden></p>
+                <p id="pwSuccess" class="admin-success" hidden></p>
+                <button type="submit" class="admin-btn" style="margin-top:12px">Değiştir</button>
+            </form>
+        </section>
+    </div>
 </div>
 
 <script type="module" src="./js/admin.js"></script>

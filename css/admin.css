@@ -126,6 +126,16 @@ body {
 
 .admin-btn:hover { background: var(--color-primary-hover); }
 
+.admin-btn-sm.danger {
+    border-color: var(--color-danger);
+    color: var(--color-danger);
+}
+
+.admin-btn-sm.danger:hover {
+    background: var(--color-danger);
+    color: #fff;
+}
+
 .admin-btn-sm {
     padding: 8px 18px;
     border: 1px solid var(--color-border);
@@ -196,6 +206,7 @@ body {
 .stat-card.accent { border-top: 3px solid var(--color-accent); }
 .stat-card.blue { border-top: 3px solid var(--color-blue); }
 .stat-card.teal { border-top: 3px solid var(--color-teal); }
+.stat-card.purple { border-top: 3px solid var(--color-purple); }
 
 .stat-num {
     display: block;
@@ -303,6 +314,107 @@ body {
 
 .item-badge.blue { background: rgba(88, 166, 255, 0.15); color: var(--color-blue); }
 .item-badge.teal { background: rgba(46, 204, 184, 0.15); color: var(--color-teal); }
+.item-badge.purple { background: rgba(157, 140, 255, 0.15); color: var(--color-purple); }
+
+/* ---------- Navigation ---------- */
+
+.dash-nav {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.nav-btn {
+    padding: 8px 14px;
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    background: transparent;
+    color: var(--color-muted);
+    font-family: var(--font);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.nav-btn:hover { border-color: var(--color-primary); color: var(--color-text); }
+.nav-btn.active { background: var(--color-primary); color: #241907; border-color: var(--color-primary); }
+
+.dash-actions {
+    display: flex;
+    gap: 8px;
+}
+
+/* ---------- Content Tabs ---------- */
+
+.content-tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.chip {
+    padding: 6px 14px;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--color-muted);
+    font-family: var(--font);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.chip:hover { border-color: var(--color-primary); color: var(--color-text); }
+.chip.active { background: var(--color-primary); color: #241907; border-color: var(--color-primary); }
+
+/* ---------- Forms ---------- */
+
+.fg {
+    margin-bottom: 14px;
+}
+
+.fg label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-muted);
+    margin-bottom: 6px;
+}
+
+.fg .admin-input {
+    text-align: left;
+    letter-spacing: normal;
+}
+
+.fg textarea.admin-input {
+    resize: vertical;
+    min-height: 60px;
+}
+
+.add-form .admin-btn {
+    width: auto;
+    margin-top: 4px;
+}
+
+.admin-success {
+    color: var(--color-success);
+    font-size: 13px;
+    margin-top: 10px;
+}
+
+/* ---------- Brand ---------- */
+
+.dash-brand span {
+    font-size: 16px;
+    font-weight: 800;
+}
+
+.gold {
+    color: var(--color-primary);
+}
 
 .dash-loading {
     text-align: center;

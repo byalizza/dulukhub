@@ -14,7 +14,7 @@ import { renderStories } from "./stories.js";
 import { renderHeritage } from "./heritage.js";
 import { renderSettings } from "./settings.js";
 import { renderSocial } from "./social.js";
-import { renderProfileScreen, renderAdminPanel, getCurrentUser } from "./auth.js";
+import { renderProfileScreen, getCurrentUser } from "./auth.js";
 import { trackPageView } from "./analytics.js";
 
 const TITLES = {
@@ -27,8 +27,7 @@ const TITLES = {
     heritage: "Tarihi Eserler — Dülük Hub",
     settings: "Ayarlar — Dülük Hub",
     social: "Sosyal Medya — Dülük Hub",
-    profile: "Profil — Dülük Hub",
-    admin: "Yönetim — Dülük Hub"
+    profile: "Profil — Dülük Hub"
 };
 
 const LOADERS = {
@@ -41,8 +40,7 @@ const LOADERS = {
     heritage: () => renderHeritage(),
     settings: () => renderSettings(),
     social: () => renderSocial(),
-    profile: () => renderProfileScreen(),
-    admin: () => renderAdminPanel()
+    profile: () => renderProfileScreen()
 };
 
 function parseHash() {

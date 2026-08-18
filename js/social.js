@@ -5,6 +5,8 @@
    ============================================================ */
 
 import { $, esc } from "./app.js";
+import { trackSocialClick } from "./analytics.js";
+import { getCurrentUser } from "./auth.js";
 
 const SOCIAL_LINKS = {
     instagram: "https://www.instagram.com/dulukhub?igsh=bTF1NXhwbzM4dHRq",
@@ -45,8 +47,13 @@ export async function renderSocial() {
 
     el.querySelectorAll(".social-card").forEach((btn) => {
         btn.addEventListener("click", () => {
-            const url = SOCIAL_LINKS[btn.dataset.link];
-            if (url) window.open(url, "_blank", "noopener");
+            const platform = btn.dataset.link;
+            const url = SOCIAL_LINKS[platform];
+            if (url) {
+                const user = getCurrentUser();
+                trackSocialClick(platform, user ? user.uid : null);
+                window.open(url, "_blank", "noopener");
+            }
         });
     });
 }

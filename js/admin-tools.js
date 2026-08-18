@@ -37,6 +37,20 @@ const events = [
     { title: "Gökhan Çınar / Katarsis", date: "2026-10-26", time: "", location: "Şahinbey Kongre ve Sanat Merkezi", description: "Gökhan Çınar'ın Katarsis programı, \u201CGel Yeniden Başlayalım\u201D başlığıyla sahnede." }
 ];
 
+const stories = [
+    "26 Eylül'de GOPSM – Gaziantep Odeon Performans Sanatları Merkezi'nde Blok3 konseri düzenlenecek. Kalabalık bir grubun sahne alacağı gecede bolca enerji ve nostalji olacak.",
+    "27 Eylül'de Şehitkamil Kültür ve Kongre Merkezi'nde mum ışıkları eşliğinde 'Candlelit Ballet: Golden Swan' bale gösterisi gerçekleşecek. Saat 20:15'te sahneye taşınacak eser, izleyenlere romantik bir atmosfer sunacak.",
+    "Gaziantep'te 3–11 Ekim tarihleri arasında GastroANTEP Kültür Yolu Festivali düzenlenecek. Konserler, sergiler, sanat atölyeleri, tiyatro, çocuk etkinlikleri ve gastronomi programlarıyla geniş kapsamlı bir şehir festivali yaşanacak. Gastronomi yarışmaları 9–11 Ekim'de yapılacak.",
+    "3 Ekim'de Şahinbey Kongre ve Sanat Merkezi'nde Fettah Can, senfonik orkestra eşliğinde sahne alacak. Saat 20:30'da başlayacak konserde sanatçının unutulmaz şarkıları yeniden yorumlanacak.",
+    "9 Ekim'de Şehitkamil Kültür ve Kongre Merkezi'nde Halil Sezai Gaziantep'e konser verecek. Saat 20:30'da başlayacak gecede şarkıcının sevilen parçaları seslendirilecek.",
+    "14 Ekim'de Şehitkamil Kültür ve Kongre Merkezi'nde Leman Sam sevenleriyle buluşacak. Saat 20:30'daki konserde sanatçı, nostaljik şarkılarıyla dinleyicilerine keyifli bir gece yaşatacak.",
+    "17 Ekim'de GAÜN Mâvera KSM Açıkhava Sahnesi'nde Hayko Cepkin, Night Flight Symphony Orchestra & Choir eşliğinde sahne alacak. Saat 21:00'de başlayacak 'An Epic Symphony' gösterisi, rock ve senfoniyi buluşturacak.",
+    "23 Ekim'de GAÜN Mâvera KSM Açıkhava Sahnesi'nde Melek Mosso Gaziantep konseri verecek. Şarkıcı, güçlü yorumuyla sahne alacak.",
+    "25 Ekim'de Jolly Joker Gaziantep'te Sagopa Kajmer Türkiye turunun Gaziantep ayağında sahne alacak. Saat 20:00'de başlayacak konserde rap sevenler için unutulmaz bir gece olacak.",
+    "25 Ekim'de Şahinbey Kongre ve Sanat Merkezi'nde mum ışığı konseptli müzik etkinliği 'Candles and Echoes' gerçekleşecek. Saat 20:15'te başlayacak etkinlik akustik tınılarıyla huzurlu bir atmosfer sunacak.",
+    "26 Ekim'de Şahinbey Kongre ve Sanat Merkezi'nde Gökhan Çınar'ın Katarsis programı, 'Gel Yeniden Başlayalım' başlığıyla sahneye taşınacak. Samimi anlatımıyla dikkat çeken program, dinleyicilerine duygusal anlar yaşatacak."
+];
+
 const statusEl = $("#status");
 const btn = $("#importBtn");
 const checkBtn = $("#checkBtn");
@@ -54,8 +68,8 @@ onAuthStateChanged(auth, (user) => {
     }
 });
 
-async function cleanupDuplicates() {
-    const snap = await getDocs(collection(db, "events"));
+async function cleanupDuplicates(colName) {
+    const snap = await getDocs(collection(db, colName));
     const byTitle = {};
     snap.docs.forEach((d) => {
         const t = (d.data().title || "").trim().toLowerCase();
@@ -68,7 +82,7 @@ async function cleanupDuplicates() {
         if (list.length > 1) {
             for (const x of list.slice(1)) {
                 try {
-                    await deleteDoc(doc(db, "events", x.id));
+                    await deleteDoc(doc(db, colName, x.id));
                     removed++;
                 } catch (e) {
                     log("err", "Kopya silinemedi: " + esc(e.message));
@@ -85,7 +99,7 @@ btn.addEventListener("click", async () => {
     statusEl.innerHTML = "";
 
     try {
-        const { byTitle, removed } = await cleanupDuplicates();
+        const { byTitle, removed } = await cleanupDuplicates("events");
         log("info", removed + " kopya etkinlik silindi.");
 
         let added = 0, skipped = 0;
@@ -123,6 +137,55 @@ btn.addEventListener("click", async () => {
 
     btn.disabled = false;
 });
+
+const storyBtn = $("#storyBtn");
+
+if (storyBtn) {
+    storyBtn.addEventListener("click", async () => {
+        storyBtn.disabled = true;
+        statusEl.innerHTML = "";
+
+        try {
+            const { byTitle, removed } = await cleanupDuplicates("stories");
+            log("info", removed + " kopya hikaye silindi.");
+
+            let added = 0, skipped = 0;
+            events.forEach((ev, i) => {
+                const title = ev.title;
+                if (byTitle[title.trim().toLowerCase()]) {
+                    skipped++;
+                    log("info", "↷ " + esc(title) + " hikayesi zaten var, atlandı.");
+                    return;
+                }
+
+                const payload = {
+                    title: title,
+                    content: stories[i] || ev.description,
+                    author: "Dülük Hub",
+                    likes: 0,
+                    date: ev.date,
+                    createdAt: new Date().toISOString()
+                };
+
+                addDoc(collection(db, "stories"), payload)
+                    .then(() => {
+                        added++;
+                        log("ok", "✔ " + esc(title) + " hikayesi eklendi.");
+                    })
+                    .catch((err) => {
+                        log("err", "✘ " + esc(title) + " — " + esc(err.message));
+                    });
+            });
+
+            await new Promise((r) => setTimeout(r, 3000));
+            log("info", "Hikaye sonucu: " + added + " eklendi, " + skipped + " zaten vardı, " + removed + " kopya silindi.");
+        } catch (err) {
+            log("err", "Hata: " + esc(err.message));
+        }
+
+        storyBtn.disabled = false;
+    });
+}
 
 if (checkBtn) {
     checkBtn.addEventListener("click", async () => {

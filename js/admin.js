@@ -5,11 +5,10 @@
    ============================================================ */
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
-import { getAuth, reauthenticateWithCredential, EmailAuthProvider, updatePassword } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
+import { getAuth, signInAnonymously, reauthenticateWithCredential, EmailAuthProvider, updatePassword } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
 import {
-    getFirestore, collection, getDocs, getDoc, doc, deleteDoc,
-    addDoc, updateDoc, setDoc,
-    query, orderBy, limit, where, increment, serverTimestamp
+    getFirestore, collection, getDocs, doc, deleteDoc,
+    addDoc, query, orderBy, limit, increment, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
 
 const ADMIN_CODE = "355334";
@@ -54,7 +53,26 @@ function timeAgo(iso) {
 }
 
 async function safeGet(q) {
-    try { return await getDocs(q); } catch { return { docs: [] }; }
+    try { return await getDocs(q); } catch (e) {
+        console.warn("Firestore okuma hatası:", e.code, e.message);
+        return { docs: [] };
+    }
+}
+
+async function safeDelete(docRef) {
+    try { await deleteDoc(docRef); return true; } catch (e) {
+        console.error("Silme hatası:", e.code, e.message);
+        alert("Silinemedi: " + (e.code === "permission-denied" ? "Bu işlem için yetkiniz yok." : e.message));
+        return false;
+    }
+}
+
+async function safeAdd(colRef, data) {
+    try { await addDoc(colRef, data); return true; } catch (e) {
+        console.error("Ekleme hatası:", e.code, e.message);
+        alert("Eklenemedi: " + (e.code === "permission-denied" ? "Bu işlem için yetkiniz yok." : e.message));
+        return false;
+    }
 }
 
 /* ---------- Cache ---------- */
@@ -91,8 +109,15 @@ function initLogin() {
 function showDashboard() {
     $("#loginScreen").hidden = true;
     $("#dashboard").hidden = false;
-    initTabs();
-    loadDashboard();
+    signInAnonymously(auth).then(() => {
+        loadDashboard();
+        initTabs();
+    }).catch(e => {
+        console.error("Auth hatası:", e);
+        alert("Kimlik doğrulanamadı. Firestore erişimi kısıtlı olabilir.");
+        loadDashboard();
+        initTabs();
+    });
     $("#refreshBtn").addEventListener("click", loadDashboard);
     $("#logoutBtn").addEventListener("click", () => {
         localStorage.removeItem(ADMIN_SESSION_KEY);
@@ -269,14 +294,10 @@ async function renderUserList() {
 
 async function deleteUser(uid) {
     if (!confirm("Bu kullanıcı kalıcı olarak silinsin mi?")) return;
-    try {
-        await deleteDoc(doc(db, "users", uid));
+    if (await safeDelete(doc(db, "users", uid))) {
         cachedUsers = cachedUsers.filter(u => u.id !== uid);
         renderUserList();
         const e = $("#statUsers"); if (e) e.textContent = cachedUsers.length;
-    } catch (err) {
-        console.error("Kullanıcı silinemedi:", err);
-        alert("Kullanıcı silinemedi: " + err.message);
     }
 }
 
@@ -328,12 +349,8 @@ async function renderContentList() {
 
 async function deleteContent(col, id) {
     if (!confirm("Bu içerik kalıcı olarak silinsin mi?")) return;
-    try {
-        await deleteDoc(doc(db, col, id));
+    if (await safeDelete(doc(db, col, id))) {
         renderContentList();
-    } catch (err) {
-        console.error("İçerik silinemedi:", err);
-        alert("İçerik silinemedi: " + err.message);
     }
 }
 
@@ -444,39 +461,32 @@ async function handleAddSubmit(formId, fd) {
     if (formId === "addPost") {
         const title = fd.get("title")?.trim();
         if (!title) throw new Error("Başlık gerekli");
-        await addDoc(collection(db, "posts"), {
+        if (!await safeAdd(collection(db, "posts"), {
             title,
             description: fd.get("description")?.trim() || "",
             category: "Güncel",
             imageUrl: fd.get("imageUrl")?.trim() || "",
             content: (fd.get("content") || "").split("\n").map(l => l.trim()).filter(Boolean),
-            published: true,
-            clicks: 0,
+            published: true, clicks: 0,
             date: fd.get("date") ? new Date(fd.get("date")).toISOString() : now,
             createdAt: now
-        });
+        })) return;
     } else if (formId === "addAnnounce") {
         const title = fd.get("title")?.trim();
         if (!title) throw new Error("Duyuru gerekli");
-        await addDoc(collection(db, "announcements"), {
-            title,
-            important: fd.get("important") === "on",
-            date: now,
-            createdAt: now
-        });
+        if (!await safeAdd(collection(db, "announcements"), {
+            title, important: fd.get("important") === "on", date: now, createdAt: now
+        })) return;
     } else if (formId === "addEvent") {
         const title = fd.get("title")?.trim();
         const date = fd.get("date");
         if (!title) throw new Error("Etkinlik adı gerekli");
         if (!date) throw new Error("Tarih gerekli");
-        await addDoc(collection(db, "events"), {
-            title,
-            date,
-            time: fd.get("time") || "",
+        if (!await safeAdd(collection(db, "events"), {
+            title, date, time: fd.get("time") || "",
             location: fd.get("location")?.trim() || "",
-            description: fd.get("description")?.trim() || "",
-            createdAt: now
-        });
+            description: fd.get("description")?.trim() || "", createdAt: now
+        })) return;
     } else if (formId === "addGiveaway") {
         const title = fd.get("title")?.trim();
         const prize = fd.get("prize")?.trim();
@@ -484,53 +494,38 @@ async function handleAddSubmit(formId, fd) {
         if (!title) throw new Error("Çekiliş adı gerekli");
         if (!prize) throw new Error("Ödül gerekli");
         if (!end) throw new Error("Bitiş tarihi gerekli");
-        await addDoc(collection(db, "giveaways"), {
-            title,
-            prize,
-            description: fd.get("description")?.trim() || "",
+        if (!await safeAdd(collection(db, "giveaways"), {
+            title, prize, description: fd.get("description")?.trim() || "",
             startDate: fd.get("startDate") ? new Date(fd.get("startDate")).toISOString() : "",
             endDate: new Date(end).toISOString(),
-            target: Number(fd.get("target")) || 50,
-            participants: 0,
-            createdAt: now
-        });
+            target: Number(fd.get("target")) || 50, participants: 0, createdAt: now
+        })) return;
     } else if (formId === "addStory") {
         const title = fd.get("title")?.trim();
         const content = fd.get("content")?.trim();
         if (!title) throw new Error("Başlık gerekli");
         if (!content) throw new Error("Hikâye gerekli");
-        await addDoc(collection(db, "stories"), {
-            title,
-            content,
-            author: fd.get("author")?.trim() || "",
-            likes: 0,
-            date: now,
-            createdAt: now
-        });
+        if (!await safeAdd(collection(db, "stories"), {
+            title, content, author: fd.get("author")?.trim() || "",
+            likes: 0, date: now, createdAt: now
+        })) return;
     } else if (formId === "addHeritage") {
         const title = fd.get("title")?.trim();
         if (!title) throw new Error("Ad gerekli");
-        await addDoc(collection(db, "heritage"), {
-            title,
-            era: fd.get("era")?.trim() || "",
+        if (!await safeAdd(collection(db, "heritage"), {
+            title, era: fd.get("era")?.trim() || "",
             description: fd.get("description")?.trim() || "",
-            imageUrl: fd.get("imageUrl")?.trim() || "",
-            date: now,
-            createdAt: now
-        });
+            imageUrl: fd.get("imageUrl")?.trim() || "", date: now, createdAt: now
+        })) return;
     } else if (formId === "addPhoto") {
         const title = fd.get("title")?.trim();
         const imageUrl = fd.get("imageUrl")?.trim();
         if (!title) throw new Error("Başlık gerekli");
         if (!imageUrl) throw new Error("Fotoğraf URL gerekli");
-        await addDoc(collection(db, "photos"), {
-            title,
-            description: fd.get("description")?.trim() || "",
-            imageUrl,
-            thumbnailUrl: imageUrl,
-            date: now,
-            createdAt: now
-        });
+        if (!await safeAdd(collection(db, "photos"), {
+            title, description: fd.get("description")?.trim() || "",
+            imageUrl, thumbnailUrl: imageUrl, date: now, createdAt: now
+        })) return;
     }
 }
 

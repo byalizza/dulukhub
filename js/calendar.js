@@ -105,7 +105,7 @@ function renderCalendarView(el) {
     /* ---------- Olaylar ---------- */
 
     $$(".event-view-toggle .chip", el).forEach((chip) => {
-        chip.addEventListener("click", () => {
+        chip.addEventListener("click", async () => {
             const { switchEventsMode } = await import("./events.js");
             switchEventsMode(chip.dataset.view);
         });

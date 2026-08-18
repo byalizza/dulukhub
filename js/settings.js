@@ -4,11 +4,10 @@
    ============================================================ */
 
 import { $, esc, toast } from "./app.js";
-import { saveSubscription, unsubscribePush, isSubscribed, initNotifications } from "./notifications.js";
+import { requestNotificationPermission, isNotificationGranted, initNotifications } from "./notifications.js";
 
 const NOTIF_KEYS = {
-    email: "dulukhub-notif-email",
-    push: "dulukhub-notif-push"
+    email: "dulukhub-notif-email"
 };
 
 function readPref(key) {
@@ -26,7 +25,7 @@ export async function renderSettings() {
     const el = $("#settingsContent");
 
     await initNotifications();
-    const pushEnabled = await isSubscribed();
+    const pushEnabled = isNotificationGranted();
 
     el.innerHTML =
         '<header class="screen-head"><h1>Ayarlar</h1><p>Uygulama tercihleri ve hesap</p></header>' +
@@ -36,8 +35,8 @@ export async function renderSettings() {
         '<div class="card setting-row">' +
         '<span class="nav-icon icon-bell">' +
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></span>' +
-        "<div><strong>Push bildirimleri</strong><small>Yeni haber ve duyuru bildirimleri</small></div>" +
-        '<button type="button" class="switch" id="notifPushToggle" role="switch" aria-checked="' + (pushEnabled ? "true" : "false") + '" aria-label="Push bildirimleri"></button></div>' +
+        "<div><strong>Bildirimler</strong><small>Tarayıcı bildirim izni</small></div>" +
+        '<button type="button" class="switch" id="notifPushToggle" role="switch" aria-checked="' + (pushEnabled ? "true" : "false") + '" aria-label="Bildirimler"></button></div>' +
 
         '<div class="card setting-row">' +
         '<span class="nav-icon icon-bell" style="background:var(--color-primary-soft);color:var(--color-primary)">' +
@@ -52,14 +51,11 @@ export async function renderSettings() {
     const pushToggle = $("#notifPushToggle", el);
     if (pushToggle) {
         pushToggle.addEventListener("click", async () => {
-            const sub = await isSubscribed();
-            if (sub) {
-                await unsubscribePush();
-                pushToggle.setAttribute("aria-checked", "false");
+            if (isNotificationGranted()) {
+                toast("Bildirimler zaten açık. Kapatmak için tarayıcı ayarlarını kullanın.", "info");
             } else {
-                await saveSubscription();
-                const nowSub = await isSubscribed();
-                pushToggle.setAttribute("aria-checked", String(nowSub));
+                await requestNotificationPermission();
+                pushToggle.setAttribute("aria-checked", String(isNotificationGranted()));
             }
         });
     }

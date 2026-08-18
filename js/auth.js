@@ -9,6 +9,7 @@
 
 import { $, $$, esc, toast, initials, fmtDate, openModal, closeModal } from "./app.js";
 import { navigateTo } from "./navigation.js";
+import { updateLastSeen } from "./analytics.js";
 import {
     auth,
     authMode,
@@ -142,6 +143,7 @@ async function loadProfile(uid, defaults) {
 function startSession() {
     $("#authGate").hidden = true;
     $("#app").hidden = false;
+    if (currentUser && currentUser.uid) updateLastSeen(currentUser.uid);
     if (!location.hash || location.hash === "#/" || location.hash === "#/news") {
         navigateTo("news");
     } else {

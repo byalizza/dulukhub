@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dülük Hub — Yönetim Paneli</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0B0D0F">
+<link rel="icon" type="image/png" href="./assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./css/admin.css">
+</head>
+<body>
+
+<div id="loginScreen" class="login-screen">
+    <div class="login-card">
+        <div class="login-logo">
+            <img src="./assets/logo.png" alt="" width="56" height="56">
+            <h1>Dülük Hub <span>Yönetim</span></h1>
+        </div>
+        <p class="login-desc">Analiz ve yönetim paneline erişim için yetki kodunu girin.</p>
+        <input id="adminCode" class="admin-input" type="password" inputmode="numeric" maxlength="8" placeholder="••••••" autocomplete="off">
+        <p id="adminError" class="admin-error" hidden></p>
+        <button id="loginBtn" class="admin-btn">Giriş Yap</button>
+    </div>
+</div>
+
+<div id="dashboard" class="dashboard" hidden>
+    <header class="dash-header">
+        <div class="dash-brand">
+            <img src="./assets/logo.png" alt="" width="32" height="32">
+            <h1>Dülük Hub <span>Yönetim</span></h1>
+        </div>
+        <button id="refreshBtn" class="admin-btn-sm" type="button">Yenile</button>
+    </header>
+
+    <div class="dash-stats" id="statsContainer">
+        <div class="stat-card"><span class="stat-num" id="statUsers">-</span><span class="stat-label">Kayıtlı Kullanıcı</span></div>
+        <div class="stat-card accent"><span class="stat-num" id="statActive">-</span><span class="stat-label">Aktif (5 dk)</span></div>
+        <div class="stat-card blue"><span class="stat-num" id="statPosts">-</span><span class="stat-label">Haber Sayısı</span></div>
+        <div class="stat-card teal"><span class="stat-num" id="statClicks">-</span><span class="stat-label">Toplam Tıklama</span></div>
+    </div>
+
+    <div class="dash-grid">
+        <section class="dash-section">
+            <h2>En Çok Tıklanan Haberler</h2>
+            <div id="topNews" class="dash-list">
+                <div class="dash-loading">Yükleniyor...</div>
+            </div>
+        </section>
+
+        <section class="dash-section">
+            <h2>Kayıtlı Kullanıcılar</h2>
+            <div id="userList" class="dash-list">
+                <div class="dash-loading">Yükleniyor...</div>
+            </div>
+        </section>
+    </div>
+
+    <section class="dash-section full-width">
+        <h2>Son Aktiviteler</h2>
+        <div id="activityList" class="dash-list">
+            <div class="dash-loading">Yükleniyor...</div>
+        </div>
+    </section>
+</div>
+
+<script type="module" src="./js/admin.js"></script>
+</body>
+</html>

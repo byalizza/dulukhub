@@ -6,6 +6,8 @@
 
 import { $, $$, esc, fmtDate, imgFallback, renderError } from "./app.js";
 import { listPosts } from "./firebase.js";
+import { trackNewsClick } from "./analytics.js";
+import { getCurrentUser } from "./auth.js";
 
 let cachedPosts = [];
 let currentFilter = "Tümü";
@@ -104,7 +106,10 @@ function renderItems(panel) {
 
     $$(".featured-news, .news-card", panel).forEach((card) => {
         card.addEventListener("click", () => {
-            location.hash = "#/news/" + encodeURIComponent(card.dataset.newsId);
+            const newsId = card.dataset.newsId;
+            const user = getCurrentUser();
+            trackNewsClick(newsId, user ? user.uid : null);
+            location.hash = "#/news/" + encodeURIComponent(newsId);
         });
     });
 }

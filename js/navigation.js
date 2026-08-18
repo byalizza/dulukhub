@@ -14,7 +14,8 @@ import { renderStories } from "./stories.js";
 import { renderHeritage } from "./heritage.js";
 import { renderSettings } from "./settings.js";
 import { renderSocial } from "./social.js";
-import { renderProfileScreen, renderAdminPanel } from "./auth.js";
+import { renderProfileScreen, renderAdminPanel, getCurrentUser } from "./auth.js";
+import { trackPageView } from "./analytics.js";
 
 const TITLES = {
     news: "Haberler — Dülük Hub",
@@ -91,6 +92,8 @@ async function router() {
 
     try {
         await loader(param);
+        const user = getCurrentUser();
+        trackPageView(screen, user ? user.uid : null);
     } catch (err) {
         console.error(`"${screen}" ekranı yüklenemedi:`, err);
         const container = $(".screen:not([hidden]) .screen-inner");

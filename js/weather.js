@@ -1,6 +1,6 @@
 /* ============================================================
    Dülük Hub — weather.js
-   Header'da basit sıcaklık göstergesi.
+   Header'da basit sıcaklık göstergesi — her zaman görünür.
    ============================================================ */
 
 const LAT = 37.07;
@@ -17,7 +17,7 @@ const WMO_ICONS = {
 };
 
 export async function renderWeatherBadge() {
-    const el = document.querySelector(".header-actions");
+    const el = document.querySelector("#weatherBadgeGlobal");
     if (!el) return;
 
     try {
@@ -33,10 +33,7 @@ export async function renderWeatherBadge() {
         const temp = Math.round(data.current.temperature_2m);
         const icon = WMO_ICONS[data.current.weather_code] || "🌡️";
 
-        const badge = document.createElement("span");
-        badge.className = "weather-badge";
-        badge.textContent = icon + " " + temp + "°C";
-        badge.title = "Dülük — anlık sıcaklık";
-        el.prepend(badge);
+        el.textContent = icon + " " + temp + "°C";
+        el.title = "Dülük — anlık sıcaklık";
     } catch (_) {}
 }

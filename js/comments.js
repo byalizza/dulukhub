@@ -59,9 +59,6 @@ export async function addComment(postId, text) {
     }
 
     const user = auth.currentUser;
-    console.log("[Comments] auth.currentUser:", user ? user.uid : "NULL");
-    console.log("[Comments] isLive:", await isLive());
-
     const author = user?.displayName || user?.email?.split("@")[0] || "Anonim";
     const uid = user?.uid || "anonymous";
 
@@ -77,8 +74,8 @@ export async function addComment(postId, text) {
             toast("Yorum eklendi!", "success");
             return docRef.id;
         } catch (err) {
-            console.error("[Comments] Firestore hatası:", err.code, err.message);
-            toast("Yorum eklenemedi: " + err.message, "error");
+            console.warn("Yorum eklenemedi:", err);
+            toast("Yorum eklenemedi.", "error");
             return null;
         }
     }
@@ -191,7 +188,6 @@ export async function renderComments(postId, container) {
     }
 
     if (form) {
-        console.log("[Comments] Form bulundu, submit bağlanıyor");
         form.addEventListener("submit", async (e) => {
             e.preventDefault();
             const text = input.value.trim();

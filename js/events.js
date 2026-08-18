@@ -83,6 +83,11 @@ export async function renderEvents() {
     }
 }
 
+export function switchEventsMode(mode) {
+    viewMode = mode;
+    renderEvents();
+}
+
 function bindViewToggle(el) {
     $$(".event-view-toggle .chip", el).forEach((chip) => {
         chip.addEventListener("click", () => {

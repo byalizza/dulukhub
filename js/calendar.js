@@ -21,6 +21,10 @@ export async function renderCalendar() {
     const el = $("#eventsContent");
     el.innerHTML =
         '<header class="screen-head"><h1>Etkinlik Takvimi</h1><p>Aylık etkinlik görünümü</p></header>' +
+        '<div class="event-view-toggle">' +
+        '<button type="button" class="chip" data-view="timeline"> Liste</button>' +
+        '<button type="button" class="chip active" data-view="calendar"> Takvim</button>' +
+        '</div>' +
         '<div class="skeleton" style="height:400px;border-radius:14px"></div>';
 
     try {
@@ -92,9 +96,20 @@ function renderCalendarView(el) {
 
     el.innerHTML =
         '<header class="screen-head"><h1>Etkinlik Takvimi</h1><p>Aylık etkinlik görünümü</p></header>' +
+        '<div class="event-view-toggle">' +
+        '<button type="button" class="chip" data-view="timeline"> Liste</button>' +
+        '<button type="button" class="chip active" data-view="calendar"> Takvim</button>' +
+        '</div>' +
         calHtml;
 
     /* ---------- Olaylar ---------- */
+
+    $$(".event-view-toggle .chip", el).forEach((chip) => {
+        chip.addEventListener("click", () => {
+            const { switchEventsMode } = await import("./events.js");
+            switchEventsMode(chip.dataset.view);
+        });
+    });
 
     const prev = el.querySelector("#calPrev");
     const next = el.querySelector("#calNext");

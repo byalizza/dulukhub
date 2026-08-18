@@ -220,30 +220,44 @@ function renderTopNews() {
 
 function renderActivity() {
     const el = $("#activityList");
-    if (!cachedAnalytics.length) { el.innerHTML = '<div class="dash-empty">Henüz aktivite yok.</div>'; return; }
-    el.innerHTML = cachedAnalytics.slice(0, 30).map(e => {
-        const user = cachedUsers.find(u => u.id === e.userId);
-        const name = user ? (user.displayName || user.username || user.email || user.id) : (e.userId || "Anonim");
-        let action = "", badge = "";
-        if (e.type === "click") {
-            const post = cachedPosts.find(p => p.id === e.newsId);
-            action = '"' + esc(post ? post.title : e.newsId) + '" haberine tıkladı';
-            badge = '<span class="item-badge blue">Tıklama</span>';
-        } else if (e.type === "view") {
-            action = esc(e.path || "") + " sayfasını görüntüledi";
-            badge = '<span class="item-badge teal">Görüntüleme</span>';
-        } else if (e.type === "social") {
-            action = esc(e.platform || "") + " bağlantısına tıkladı";
-            badge = '<span class="item-badge purple">Sosyal</span>';
-        } else {
-            action = esc(e.type);
-            badge = '<span class="item-badge">' + esc(e.type) + '</span>';
-        }
-        const ts = e.timestamp?.toDate ? e.timestamp.toDate().toISOString() : (e.timestamp || "");
-        return '<div class="dash-list-item"><div class="item-info">' +
-            '<div class="item-title">' + esc(name) + ' ' + action + '</div>' +
-            '<div class="item-sub">' + timeAgo(ts) + '</div></div>' + badge + '</div>';
-    }).join("");
+    if (!cachedUsers.length) { el.innerHTML = '<div class="dash-empty">Henüz kullanıcı yok.</div>'; return; }
+
+    const now = Date.now();
+    const fiveMinAgo = now - 5 * 60 * 1000;
+
+    const activities = cachedUsers
+        .filter(u => u.lastSeen || u.createdAt)
+        .map(u => {
+            const lastSeenTime = u.lastSeen ? new Date(u.lastSeen).getTime() : 0;
+            const createdTime = u.createdAt ? new Date(u.createdAt).getTime() : 0;
+            const isActive = lastSeenTime > fiveMinAgo;
+            const name = u.displayName || u.username || u.email || u.id;
+
+            let action, badge;
+            if (isActive) {
+                action = "şu anda sitede";
+                badge = '<span class="item-badge active">Aktif</span>';
+            } else if (lastSeenTime > createdTime && lastSeenTime > 0) {
+                action = "siteye giriş yaptı";
+                badge = '<span class="item-badge blue">Giriş</span>';
+            } else {
+                action = "kayıt oldu";
+                badge = '<span class="item-badge teal">Kayıt</span>';
+            }
+
+            const ts = isActive ? u.lastSeen : (u.lastSeen || u.createdAt || "");
+            return { name, action, badge, ts, sortTime: lastSeenTime || createdTime };
+        })
+        .sort((a, b) => b.sortTime - a.sortTime)
+        .slice(0, 30);
+
+    if (!activities.length) { el.innerHTML = '<div class="dash-empty">Henüz aktivite yok.</div>'; return; }
+
+    el.innerHTML = activities.map(a =>
+        '<div class="dash-list-item"><div class="item-info">' +
+        '<div class="item-title">' + esc(a.name) + ' ' + a.action + '</div>' +
+        '<div class="item-sub">' + timeAgo(a.ts) + '</div></div>' + a.badge + '</div>'
+    ).join("");
 }
 
 /* ---------- Kullanıcılar ---------- */

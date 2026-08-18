@@ -333,7 +333,7 @@ function renderAddForms() {
     el.innerHTML = `
     <div class="dash-grid">
         <section class="dash-section"><h2>Haber Ekle</h2>
-            <form id="addPost" class="add-form" novalidate>
+            <form id="addPost" class="add-form">
                 <div class="fg"><label>Başlık *</label><input name="title" class="admin-input" required maxlength="150"></div>
                 <div class="fg"><label>Kısa açıklama</label><textarea name="description" class="admin-input" maxlength="500"></textarea></div>
                 <div class="fg"><label>Tarih *</label><input name="date" class="admin-input" type="date" required></div>
@@ -411,13 +411,17 @@ function renderAddForms() {
 async function handleAddSubmit(formId, fd) {
     const now = new Date().toISOString();
     const data = {
-        addPost: () => ({
-            title: fd.get("title")?.trim(), description: fd.get("description")?.trim() || "",
-            category: "Güncel", imageUrl: fd.get("imageUrl")?.trim() || "",
-            content: (fd.get("content") || "").split("\n").map(l => l.trim()).filter(Boolean),
-            published: true, clicks: 0,
-            date: fd.get("date") || now, createdAt: now
-        }),
+        addPost: () => {
+            const enteredDate = fd.get("date");
+            if (!enteredDate) throw new Error("Tarih seçmelisiniz.");
+            return {
+                title: fd.get("title")?.trim(), description: fd.get("description")?.trim() || "",
+                category: "Güncel", imageUrl: fd.get("imageUrl")?.trim() || "",
+                content: (fd.get("content") || "").split("\n").map(l => l.trim()).filter(Boolean),
+                published: true, clicks: 0,
+                date: enteredDate, createdAt: now
+            };
+        },
         addAnnounce: () => ({
             title: fd.get("title")?.trim(), important: fd.get("important") === "on", date: now, createdAt: now
         }),

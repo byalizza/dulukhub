@@ -3,34 +3,55 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Etkinlik Toplu Yükleme — Dülük Hub</title>
+<title>Yönetim Araçları — Dülük Hub</title>
 <meta name="robots" content="noindex, nofollow">
 <style>
-    body { font-family: "Segoe UI", Arial, sans-serif; background: #0A0E14; color: #e5e7eb; margin: 0; padding: 24px; }
-    .card { max-width: 720px; margin: 0 auto; background: #111820; border: 1px solid #1f2937; border-radius: 14px; padding: 24px; }
-    h1 { font-size: 20px; color: #06B6D4; margin: 0 0 6px; }
-    p.sub { color: #9ca3af; margin: 0 0 18px; font-size: 13px; }
-    .btn-row { display: flex; gap: 10px; }
-    button { background: #06B6D4; color: #04262b; border: 0; border-radius: 10px; padding: 12px 20px; font-size: 14px; font-weight: 700; cursor: pointer; }
+    body { font-family: "Manrope", "Segoe UI", Arial, sans-serif; background: #0A0E14; color: #e5e7eb; margin: 0; padding: 24px; }
+    .wrap { max-width: 860px; margin: 0 auto; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+    h1 { font-size: 20px; color: #06B6D4; margin: 0; }
+    p.sub { color: #9ca3af; margin: 4px 0 0; font-size: 13px; }
+    button { background: #06B6D4; color: #04262b; border: 0; border-radius: 10px; padding: 10px 18px; font-size: 13.5px; font-weight: 700; cursor: pointer; }
     button.secondary { background: #1f2937; color: #e5e7eb; }
     button.danger { background: #7f1d1d; color: #fecaca; }
+    button.small { padding: 6px 12px; font-size: 12px; border-radius: 8px; }
     button:disabled { opacity: 0.5; cursor: not-allowed; }
-    #status { margin-top: 16px; font-size: 13px; line-height: 1.7; }
-    .ok { color: #34d399; }
-    .err { color: #f87171; }
-    .info { color: #93c5fd; }
+    .pending-head { display: flex; gap: 8px; align-items: center; margin: 8px 0 14px; }
+    .item { background: #111820; border: 1px solid #1f2937; border-radius: 12px; padding: 14px 16px; margin-bottom: 12px; }
+    .item .meta { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
+    .badge { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 999px; }
+    .badge-cat { background: rgba(139, 92, 246, 0.18); color: #c4b5fd; }
+    .badge-date { background: rgba(6, 182, 212, 0.14); color: #67e8f9; }
+    .item h3 { margin: 0 0 6px; font-size: 15.5px; color: #F1F5F9; }
+    .item p { margin: 0 0 10px; font-size: 13px; line-height: 1.65; color: #cbd5e1; }
+    .item-actions { display: flex; gap: 8px; }
+    .done { color: #34d399; font-size: 13px; font-weight: 600; }
+    .skip { color: #f87171; font-size: 13px; font-weight: 600; }
+    #status { margin: 14px 0; font-size: 13px; line-height: 1.7; }
+    .ok { color: #34d399; } .err { color: #f87171; } .info { color: #93c5fd; }
+    .empty { text-align: center; color: #9ca3af; padding: 30px 0; font-size: 14px; }
 </style>
 </head>
 <body>
-<div class="card">
-    <h1>Yönetim Araçları</h1>
-    <p class="sub" id="authInfo">Oturum kontrol ediliyor...</p>
-    <div class="btn-row">
-        <button id="storyBtn" type="button">Tarihi Eserleri Hikaye Yap</button>
-        <button id="cleanupBtn" class="secondary" type="button">Konser Hikayelerini Temizle</button>
-        <button id="backBtn" class="danger" type="button">Panele Dön</button>
+<div class="wrap">
+    <div class="topbar">
+        <div>
+            <h1>Yönetim Araçları</h1>
+            <p class="sub" id="authInfo">Oturum kontrol ediliyor...</p>
+        </div>
+        <button id="backBtn" type="button">← Panele Dön</button>
     </div>
+
+    <div class="pending-head">
+        <button id="approveAllBtn" type="button">Tümünü Onayla</button>
+        <span class="sub" id="countInfo"></span>
+    </div>
+
+    <div id="pendingList"></div>
     <div id="status"></div>
+
+    <hr style="border-color:#1f2937;margin:22px 0">
+    <button id="cleanupBtn" class="secondary small" type="button">Yanlışlıkla Eklenen Konser Hikayelerini Temizle</button>
 </div>
 <script type="module" src="./js/admin-tools.js"></script>
 </body>

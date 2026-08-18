@@ -155,6 +155,29 @@ async function deleteOne(i) {
     renderList();
 }
 
+$("#deleteAllBtn").addEventListener("click", async () => {
+    if (!pending.length) return;
+    if (!confirm(pending.length + " bekleyen eser TAMAMEN silinsin mi? Bu geri alınamaz!")) return;
+
+    $("#deleteAllBtn").disabled = true;
+    let ok = 0, fail = 0;
+
+    for (const h of [...pending]) {
+        try {
+            await deleteDoc(doc(db, "heritage", h.id));
+            ok++;
+        } catch (err) {
+            fail++;
+            log("err", "Silinemedi: " + esc(h.title) + " — " + esc(err.message));
+        }
+    }
+
+    log("info", "Sonuç: " + ok + " silindi, " + fail + " hata.");
+    pending = [];
+    $("#deleteAllBtn").disabled = false;
+    renderList();
+});
+
 approveAllBtn.addEventListener("click", async () => {
     approveAllBtn.disabled = true;
     let ok = 0, fail = 0;

@@ -737,6 +737,16 @@ button {
 @media (min-width: 900px) {
     .drawer.closed {
         transform: translateX(-100%);
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        z-index: 60;
+    }
+
+    .drawer.closed + .drawer-scrim + .main-content,
+    .drawer.closed ~ .main-content {
+        max-width: 100%;
     }
 
     .auth-gate {

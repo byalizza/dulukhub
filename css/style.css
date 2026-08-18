@@ -6,7 +6,6 @@
 
 :root {
     --font: "Manrope", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    --font-head: "Cormorant Garamond", Georgia, "Times New Roman", serif;
 
     /* Karanlık tema (tek tema): koyu zemin + altın vurgu */
     --color-primary: #F2B84B;
@@ -86,7 +85,7 @@ h2,
 .screen-head h1,
 .gate-brand h1,
 .news-detail h1 {
-    font-family: var(--font-head);
+    font-family: var(--font);
     letter-spacing: 0.02em;
 }
 
@@ -369,7 +368,7 @@ button {
 }
 
 .drawer-brand-name {
-    font-family: var(--font-head);
+    font-family: var(--font);
     font-size: 21px;
     font-weight: 700;
     letter-spacing: 0.05em;
@@ -608,7 +607,7 @@ button {
 
 .app-footer strong {
     display: block;
-    font-family: var(--font-head);
+    font-family: var(--font);
     font-size: 16px;
     font-weight: 700;
     letter-spacing: 0.03em;

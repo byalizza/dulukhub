@@ -68,6 +68,14 @@
     }
 }
 
+/* ---------- Mobil: tarihi eserler ---------- */
+
+@media (max-width: 640px) {
+    .heritage-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
 /* ---------- Küçük telefonlar ---------- */
 
 @media (max-width: 380px) {

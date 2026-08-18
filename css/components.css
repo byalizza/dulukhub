@@ -1008,19 +1008,31 @@
 
 /* ---------- Tarihi Eserler ---------- */
 
-.heritage-list {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
+.heritage-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
 }
 
 .heritage-card {
     overflow: hidden;
+    padding: 0;
+    text-align: left;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border, rgba(148, 163, 184, 0.14));
+    border-radius: 12px;
+    cursor: pointer;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.heritage-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--color-primary);
 }
 
 .heritage-cover {
     position: relative;
-    aspect-ratio: 16 / 10;
+    aspect-ratio: 4 / 3;
     overflow: hidden;
 }
 
@@ -1037,25 +1049,26 @@
 
 .heritage-era {
     position: absolute;
-    top: 10px;
-    left: 10px;
-    padding: 4px 11px;
+    top: 8px;
+    left: 8px;
+    padding: 3px 9px;
     border-radius: 999px;
     background: var(--tone-heritage);
     color: #fff;
-    font-size: 11px;
+    font-size: 10.5px;
     font-weight: 700;
     letter-spacing: 0.03em;
 }
 
 .heritage-body {
-    padding: 15px;
+    padding: 10px 12px;
 }
 
 .heritage-body h3 {
-    margin: 0 0 6px;
-    font-size: 16px;
+    margin: 0;
+    font-size: 13.5px;
     font-weight: 700;
+    line-height: 1.35;
 }
 
 .heritage-body p {

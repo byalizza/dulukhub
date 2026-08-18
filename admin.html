@@ -20,12 +20,12 @@
             <img src="./assets/logo.png" alt="" width="56" height="56">
             <h1>Dülük Hub <span>Yönetim</span></h1>
         </div>
-        <p class="login-desc">Yönetim paneline erişim için kodu girin.</p>
-        <input id="adminCode" class="admin-input" type="password" inputmode="numeric" maxlength="8" placeholder="••••••" autocomplete="off">
-        <p id="adminError" class="admin-error" hidden></p>
-        <button id="loginBtn" class="admin-btn">Giriş Yap</button>
+        <p class="login-desc">Oturum kontrol ediliyor...</p>
+        <div class="dash-loading" style="padding:8px">Lütfen bekleyin</div>
     </div>
 </div>
+
+<div id="accessDenied" class="login-screen" hidden></div>
 
 <div id="dashboard" class="dashboard" hidden>
     <header class="dash-header">
@@ -46,7 +46,6 @@
         </div>
     </header>
 
-    <!-- Genel Bakış -->
     <div id="tabStats" class="tab-panel">
         <div class="dash-stats">
             <div class="stat-card"><span class="stat-num" id="statUsers">-</span><span class="stat-label">Kullanıcı</span></div>
@@ -67,7 +66,6 @@
         </div>
     </div>
 
-    <!-- Kullanıcılar -->
     <div id="tabUsers" class="tab-panel" hidden>
         <section class="dash-section full-width">
             <h2>Kayıtlı Kullanıcılar</h2>
@@ -75,7 +73,6 @@
         </section>
     </div>
 
-    <!-- İçerikler -->
     <div id="tabContent" class="tab-panel" hidden>
         <section class="dash-section full-width">
             <h2>Mevcut İçerikler</h2>
@@ -92,12 +89,10 @@
         </section>
     </div>
 
-    <!-- İçerik Ekle -->
     <div id="tabAdd" class="tab-panel" hidden>
         <div class="add-forms" id="addForms"></div>
     </div>
 
-    <!-- Şifre Değiştir -->
     <div id="tabPassword" class="tab-panel" hidden>
         <section class="dash-section" style="max-width:480px">
             <h2>Şifre Değiştir</h2>

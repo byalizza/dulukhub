@@ -416,7 +416,7 @@ async function handleAddSubmit(formId, fd) {
             category: "Güncel", imageUrl: fd.get("imageUrl")?.trim() || "",
             content: (fd.get("content") || "").split("\n").map(l => l.trim()).filter(Boolean),
             published: true, clicks: 0,
-            date: fd.get("date") ? new Date(fd.get("date")).toISOString() : now, createdAt: now
+            date: fd.get("date") || now, createdAt: now
         }),
         addAnnounce: () => ({
             title: fd.get("title")?.trim(), important: fd.get("important") === "on", date: now, createdAt: now

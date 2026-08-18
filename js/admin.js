@@ -410,6 +410,7 @@ function renderAddForms() {
 
 async function handleAddSubmit(formId, fd) {
     const now = new Date().toISOString();
+    console.log("[Admin] formId:", formId, "date:", fd.get("date"), "now:", now);
     const data = {
         addPost: () => ({
             title: fd.get("title")?.trim(), description: fd.get("description")?.trim() || "",

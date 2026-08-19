@@ -277,6 +277,13 @@ body {
 
 .dash-list-item:last-child { border-bottom: none; }
 
+.dash-list-item .item-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
 .dash-list-item .item-info {
     flex: 1;
     min-width: 0;

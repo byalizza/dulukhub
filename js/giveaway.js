@@ -148,7 +148,14 @@ async function joinGiveaway(id, btn) {
     }
     btn.disabled = true;
     try {
-        await enterGiveaway(g.id);
+        const u = getCurrentUser();
+        const livePhone = u ? u.phoneNumber || "" : "";
+        const autoEmail = u ? (u.email || "").match(/^phone(\d+)@/) : null;
+        await enterGiveaway(g.id, {
+            uid: u ? u.uid : "",
+            name: u ? (u.displayName || "") : "",
+            phone: livePhone || (autoEmail ? autoEmail[1] : "")
+        });
         g.participants = (Number(g.participants) || 0) + 1;
         markJoined(g.id);
 

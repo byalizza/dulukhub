@@ -51,6 +51,16 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // ===== ÇEKİLİŞ KATILIMLARI =====
+    match /giveawayEntries/{entryId} {
+      allow read: if isAdmin();
+      allow create: if isSignedIn()
+        && request.resource.data.giveawayId is string
+        && request.resource.data.giveawayId.size() > 0
+        && request.resource.data.uid == request.auth.uid;
+      allow delete: if isAdmin();
+    }
+
     // ===== HİKÂYELER =====
     match /stories/{docId} {
       allow read: if true;

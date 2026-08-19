@@ -10,7 +10,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
 import {
     getFirestore, collection, getDocs, doc, deleteDoc,
-    addDoc, query, orderBy, limit, getDoc, increment, serverTimestamp
+    addDoc, query, orderBy, limit, getDoc, increment, serverTimestamp, where
 } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -321,17 +321,36 @@ async function renderContentList() {
         let extra = "";
         if (activeContentTab === "posts" && item.clicks) extra = " · " + item.clicks + " tıklanma";
         if (activeContentTab === "giveaways" && item.participants) extra = " · " + item.participants + " katılımcı";
+        const participantsBtn = activeContentTab === "giveaways"
+            ? '<button class="admin-btn-sm content-entries-btn" data-id="' + esc(item.id) + '">Katılanlar</button>'
+            : "";
         return '<div class="dash-list-item"><div class="item-info">' +
             '<div class="item-title">' + esc(title) + '</div>' +
             '<div class="item-sub">' + fmtDate(date) + extra + '</div></div>' +
-            '<button class="admin-btn-sm danger content-del-btn" data-col="' + activeContentTab + '" data-id="' + esc(item.id) + '">Sil</button></div>';
+            '<div class="item-actions">' + participantsBtn +
+            '<button class="admin-btn-sm danger content-del-btn" data-col="' + activeContentTab + '" data-id="' + esc(item.id) + '">Sil</button></div></div>';
     }).join("");
     $$(".content-del-btn", el).forEach(btn => { btn.addEventListener("click", () => deleteContent(btn.dataset.col, btn.dataset.id)); });
+    $$(".content-entries-btn", el).forEach(btn => { btn.addEventListener("click", () => showGiveawayEntries(btn.dataset.id)); });
 }
 
 async function deleteContent(col, id) {
     if (!confirm("Bu içerik silinsin mi?")) return;
     if (await safeDelete(doc(db, col, id))) renderContentList();
+}
+
+async function showGiveawayEntries(giveawayId) {
+    try {
+        const snap = await getDocs(query(collection(db, "giveawayEntries"), where("giveawayId", "==", giveawayId)));
+        const entries = snap.docs.map((d) => d.data());
+        const list = entries.length
+            ? entries.map((e, i) => (i + 1) + ". " + (e.name || "-") + (e.phone ? " — " + e.phone : "")).join("\n")
+            : "Henüz katılım kaydı yok.";
+        alert("Katılanlar (" + entries.length + "):\n\n" + list);
+    } catch (err) {
+        console.error("Katılımcılar yüklenemedi:", err);
+        alert("Katılımcılar yüklenemedi: " + err.message);
+    }
 }
 
 /* ---------- İçerik Ekleme ---------- */

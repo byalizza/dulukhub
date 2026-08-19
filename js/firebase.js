@@ -23,6 +23,7 @@ import {
     doc,
     updateDoc,
     deleteDoc,
+    where,
     serverTimestamp,
     increment
 } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
@@ -238,9 +239,27 @@ export function createHeritageItem(data) {
 
 /* --- Çekilişe katılma --- */
 
-export async function enterGiveaway(id) {
+export async function enterGiveaway(id, userInfo) {
     if (await isLive()) {
         await updateDoc(doc(db, "giveaways", id), { participants: increment(1) });
+        if (userInfo && userInfo.uid) {
+            try {
+                const entryId = id + "_" + userInfo.uid;
+                const entryRef = doc(db, "giveawayEntries", entryId);
+                const existing = await getDoc(entryRef);
+                if (!existing.exists()) {
+                    await setDoc(entryRef, {
+                        giveawayId: id,
+                        uid: userInfo.uid,
+                        name: userInfo.name || "",
+                        phone: userInfo.phone || "",
+                        joinedAt: new Date().toISOString()
+                    });
+                }
+            } catch (err) {
+                console.warn("Katılım kaydı eklenemedi:", err);
+            }
+        }
         return true;
     }
     const local = readLocal();
@@ -250,6 +269,12 @@ export async function enterGiveaway(id) {
     local.giveaways = list;
     writeLocal(local);
     return true;
+}
+
+export async function listGiveawayEntries(giveawayId) {
+    if (!(await isLive())) return [];
+    const snap = await getDocs(query(collection(db, "giveawayEntries"), where("giveawayId", "==", giveawayId)));
+    return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 }
 
 export async function deleteItem(name, id) {

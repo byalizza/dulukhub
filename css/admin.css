@@ -437,6 +437,91 @@ body {
     font-size: 13px;
 }
 
+/* ---------- Detay Modalı ---------- */
+
+.admin-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: rgba(0, 0, 0, 0.75);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+
+.admin-modal {
+    width: 100%;
+    max-width: 720px;
+    max-height: 86vh;
+    overflow-y: auto;
+    background: #0B1220;
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    padding: 18px;
+}
+
+.admin-modal h3 {
+    margin: 0 0 12px;
+    font-size: 15px;
+    font-weight: 800;
+}
+
+.admin-modal pre {
+    background: #05080F;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 11.5px;
+    line-height: 1.6;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+    margin: 10px 0;
+    color: #9FE8A8;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+    margin: 8px 0 14px;
+}
+
+.admin-table th,
+.admin-table td {
+    text-align: left;
+    padding: 7px 9px;
+    border-bottom: 1px solid var(--color-border);
+    vertical-align: top;
+    word-break: break-all;
+}
+
+.admin-table th {
+    color: var(--color-muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.admin-keyval {
+    font-size: 12.5px;
+    margin: 6px 0;
+}
+
+.admin-keyval b {
+    color: var(--color-primary);
+    font-weight: 600;
+}
+
+.admin-modal-btns {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
 /* ---------- Scrollbar ---------- */
 
 ::-webkit-scrollbar { width: 6px; }

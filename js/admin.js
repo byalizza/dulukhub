@@ -289,13 +289,53 @@ async function renderUserList() {
         const badge = isActive ? '<span class="item-badge active">Aktif</span>' : '<span class="item-badge">' + timeAgo(u.lastSeen) + '</span>';
         const role = u.role === "admin" ? ' <span style="color:var(--color-primary);font-weight:700">Yönetici</span>' : "";
         return '<div class="dash-list-item"><div class="item-info">' +
-            '<div class="item-title">' + esc(u.displayName || u.username || u.email || u.id) + role + '</div>' +
-            '<div class="item-sub">' + esc(u.email || u.phone || u.id) + '</div></div>' +
+            '<div class="item-title">' + esc(u.displayName || u.username || u.email || u.phone || u.id) + role + '</div>' +
+            '<div class="item-sub">' + esc((u.phone || u.email || "") + " · " + (u.id || "").slice(0, 12) + "…") + '</div></div>' +
             '<div style="display:flex;gap:8px;align-items:center">' + badge +
+            '<button class="admin-btn-sm user-inspect-btn" data-uid="' + esc(u.id) + '">İncele</button>' +
             (u.role !== "admin" ? '<button class="admin-btn-sm danger user-del-btn" data-uid="' + esc(u.id) + '">Sil</button>' : '') +
             '</div></div>';
     }).join("");
     $$(".user-del-btn", el).forEach(btn => { btn.addEventListener("click", () => deleteUser(btn.dataset.uid)); });
+    $$(".user-inspect-btn", el).forEach(btn => { btn.addEventListener("click", () => showUserDetails(btn.dataset.uid)); });
+}
+
+async function showUserDetails(uid) {
+    try {
+        const uDoc = await getDoc(doc(db, "users", uid));
+        if (!uDoc.exists()) {
+            openAdminModal("Kullanıcı İncele", '<div class="dash-empty">Kullanıcı kaydı bulunamadı.</div>', null);
+            return;
+        }
+        const u = { uid: uDoc.id, ...uDoc.data() };
+        const entriesSnap = await getDocs(query(collection(db, "giveawayEntries"), where("uid", "==", uid)));
+        const entries = entriesSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
+
+        const keyVals = [
+            ["UID", u.uid || "-"],
+            ["Ad / Kullanıcı adı", u.displayName || u.username || "-"],
+            ["Telefon", u.phone || "-"],
+            ["E-posta", u.email || "-"],
+            ["Rol", u.role || "user"],
+            ["Kayıt tarihi", fmtDate(u.createdAt)],
+            ["Son görülme", fmtDate(u.lastSeen)],
+            ["Çekiliş katılımı sayısı", entries.length]
+        ].map(([k, v]) => '<div class="admin-keyval"><b>' + esc(k) + ":</b> " + esc(v || "-") + "</div>").join("");
+
+        const entriesBody = entries.length
+            ? "<table class=\"admin-table\"><thead><tr><th>Çekiliş ID</th><th>Telefon</th><th>Cihaz ID</th><th>Tarih</th></tr></thead><tbody>" +
+              entries.map((e) => "<tr><td style=\"font-size:10.5px\">" + esc(e.giveawayId) + "</td><td>" + esc(e.phone || "-") +
+              "</td><td style=\"font-size:10.5px\">" + esc(e.deviceId || "-") + "</td><td>" + fmtDate(e.joinedAt) + "</td></tr>").join("") +
+              "</tbody></table>"
+            : '<div class="dash-empty">Bu kullanıcının çekiliş katılımı yok.</div>';
+
+        openAdminModal("Kullanıcı İncele — " + (u.displayName || u.username || u.phone || uid), keyVals + entriesBody, {
+            copy: { label: "JSON Kopyala", text: JSON.stringify(u, null, 2) }
+        });
+    } catch (err) {
+        console.error("Kullanıcı detayı yüklenemedi:", err);
+        openAdminModal("Kullanıcı İncele", '<div class="dash-empty">' + esc(err.message) + "</div>", null);
+    }
 }
 
 async function deleteUser(uid) {
@@ -340,17 +380,75 @@ async function deleteContent(col, id) {
 }
 
 async function showGiveawayEntries(giveawayId) {
+    // Çekiliş başlığını da çek
+    let giveawayTitle = giveawayId;
+    try {
+        const gDoc = await getDoc(doc(db, "giveaways", giveawayId));
+        if (gDoc.exists()) giveawayTitle = gDoc.data().title || giveawayId;
+    } catch (_) {}
     try {
         const snap = await getDocs(query(collection(db, "giveawayEntries"), where("giveawayId", "==", giveawayId)));
-        const entries = snap.docs.map((d) => d.data());
-        const list = entries.length
-            ? entries.map((e, i) => (i + 1) + ". " + (e.name || "-") + (e.phone ? " — " + e.phone : "")).join("\n")
-            : "Henüz katılım kaydı yok.";
-        alert("Katılanlar (" + entries.length + "):\n\n" + list);
+        const entries = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+
+        let body;
+        if (!entries.length) {
+            body = '<div class="dash-empty">Henüz katılım kaydı yok.</div>';
+        } else {
+            body =
+                '<table class="admin-table"><thead><tr><th>#</th><th>Ad</th><th>Telefon</th><th>UID</th><th>Cihaz ID</th><th>Katılım Tarihi</th></tr></thead><tbody>' +
+                entries.map((e, i) =>
+                    "<tr><td>" + (i + 1) + "</td><td>" + esc(e.name || "-") + "</td><td>" + esc(e.phone || "-") +
+                    "</td><td style=\"font-size:10.5px\">" + esc(e.uid || "-") + "</td><td style=\"font-size:10.5px\">" + esc(e.deviceId || "-") +
+                    "</td><td>" + fmtDate(e.joinedAt) + "</td></tr>"
+                ).join("") +
+                "</tbody></table>" +
+                '<div class="admin-keyval"><b>' + entries.length + "</b> toplam katılımcı</div>" +
+                '<pre>' + esc(JSON.stringify(entries, null, 2)) + "</pre>";
+        }
+
+        openAdminModal("Katılanlar — " + giveawayTitle, body, {
+            copy: { label: "JSON Kopyala", text: JSON.stringify(entries, null, 2) }
+        });
     } catch (err) {
         console.error("Katılımcılar yüklenemedi:", err);
-        alert("Katılımcılar yüklenemedi: " + err.message);
+        openAdminModal("Katılımcılar", '<div class="dash-empty">' + esc(err.message) + "</div>", null);
     }
+}
+
+/* ---------- Detay modalı ---------- */
+
+function openAdminModal(title, body, opts) {
+    const overlay = document.createElement("div");
+    overlay.className = "admin-overlay";
+
+    const modal = document.createElement("div");
+    modal.className = "admin-modal";
+
+    const btns = (opts && opts.copy)
+        ? '<div class="admin-modal-btns">' +
+          '<button type="button" class="admin-btn-sm admin-copy-json">' + esc(opts.copy.label) + "</button>" +
+          '<button type="button" class="admin-btn-sm admin-close">Kapat</button></div>'
+        : '<div class="admin-modal-btns"><button type="button" class="admin-btn-sm admin-close">Kapat</button></div>';
+
+    modal.innerHTML = "<h3>" + esc(title) + "</h3>" + body + btns;
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+
+    modal.querySelector(".admin-close").addEventListener("click", () => overlay.remove());
+    overlay.addEventListener("click", (e) => {
+        if (e.target === overlay) overlay.remove();
+    });
+    if (opts && opts.copy) {
+        modal.querySelector(".admin-copy-json").addEventListener("click", async () => {
+            try {
+                await navigator.clipboard.writeText(opts.copy.text);
+                modal.querySelector(".admin-copy-json").textContent = "Kopyalandı ✓";
+            } catch (_) {
+                prompt("Kopyalamak için:", opts.copy.text);
+            }
+        });
+    }
+    return { overlay, modal };
 }
 
 /* ---------- İçerik Ekleme ---------- */

@@ -5,7 +5,7 @@
 
 import { $, $$, esc, toast, imgFallback, fmtDate, fmtDateTime, renderError } from "./app.js";
 import { listGiveaways, enterGiveaway } from "./firebase.js";
-import { getCurrentUser } from "./auth.js";
+import { getCurrentUser, getDeviceId } from "./auth.js";
 
 let cachedGiveaways = [];
 let joinedSet = new Set();
@@ -151,14 +151,25 @@ async function joinGiveaway(id, btn) {
         const u = getCurrentUser();
         const livePhone = u ? u.phoneNumber || "" : "";
         const autoEmail = u ? (u.email || "").match(/^phone(\d+)@/) : null;
-        const ok = await enterGiveaway(g.id, {
+        const result = await enterGiveaway(g.id, {
             uid: u ? u.uid : "",
             name: u ? (u.displayName || "") : "",
-            phone: livePhone || (autoEmail ? autoEmail[1] : "")
+            phone: livePhone || (autoEmail ? autoEmail[1] : ""),
+            deviceId: getDeviceId()
         });
-        if (!ok) {
+        if (result === "exists") {
             btn.disabled = false;
             toast("Bu numara zaten çekilişe katılmış.", "error");
+            return;
+        }
+        if (result === "limit") {
+            btn.disabled = false;
+            toast("Bu cihazdan en fazla 2 katılım yapılabilir.", "error");
+            return;
+        }
+        if (result !== "ok") {
+            btn.disabled = false;
+            toast("Katılım alınamadı. Tekrar dene.", "error");
             return;
         }
         g.participants = (Number(g.participants) || 0) + 1;

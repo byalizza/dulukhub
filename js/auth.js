@@ -60,6 +60,21 @@ function phoneToEmail(phone) {
 
 /* ---------- Oturum erişimcileri ---------- */
 
+const DEVICE_KEY = "dulukhub-device-id";
+
+export function getDeviceId() {
+    try {
+        let id = localStorage.getItem(DEVICE_KEY);
+        if (!id) {
+            id = "dev_" + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+            localStorage.setItem(DEVICE_KEY, id);
+        }
+        return id;
+    } catch (err) {
+        return "dev_" + Math.random().toString(36).slice(2, 10);
+    }
+}
+
 export function getCurrentUser() {
     return currentUser;
 }

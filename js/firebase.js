@@ -241,33 +241,38 @@ export function createHeritageItem(data) {
 
 export async function enterGiveaway(id, userInfo) {
     if (await isLive()) {
-        let isNew = true;
-        if (userInfo && userInfo.uid) {
-            try {
-                const phoneKey = (userInfo.phone || "").replace(/\D/g, "");
-                const entryId = id + (phoneKey ? "_p" + phoneKey : "_u" + userInfo.uid);
-                const entryRef = doc(db, "giveawayEntries", entryId);
-                const existing = await getDoc(entryRef);
-                if (existing.exists()) {
-                    isNew = false;
-                } else {
-                    await setDoc(entryRef, {
-                        giveawayId: id,
-                        uid: userInfo.uid,
-                        name: userInfo.name || "",
-                        phone: userInfo.phone || "",
-                        joinedAt: new Date().toISOString()
-                    });
-                }
-            } catch (err) {
-                console.warn("Katılım kaydı eklenemedi:", err);
-                isNew = false;
+        if (!userInfo || !userInfo.uid) return "error";
+
+        try {
+            const phoneKey = (userInfo.phone || "").replace(/\D/g, "");
+            const entryId = id + (phoneKey ? "_p" + phoneKey : "_u" + userInfo.uid);
+            const entryRef = doc(db, "giveawayEntries", entryId);
+            const existing = await getDoc(entryRef);
+            if (existing.exists()) return "exists";
+
+            if (userInfo.deviceId) {
+                const deviceSnap = await getDocs(query(
+                    collection(db, "giveawayEntries"),
+                    where("deviceId", "==", userInfo.deviceId)
+                ));
+                const sameDeviceInThisGiveaway = deviceSnap.docs.filter((d) => d.data().giveawayId === id);
+                if (sameDeviceInThisGiveaway.length >= 2) return "limit";
             }
-        }
-        if (isNew) {
+
+            await setDoc(entryRef, {
+                giveawayId: id,
+                uid: userInfo.uid,
+                name: userInfo.name || "",
+                phone: userInfo.phone || "",
+                deviceId: userInfo.deviceId || "",
+                joinedAt: new Date().toISOString()
+            });
             await updateDoc(doc(db, "giveaways", id), { participants: increment(1) });
+            return "ok";
+        } catch (err) {
+            console.warn("Katılım kaydı eklenemedi:", err);
+            return "error";
         }
-        return isNew;
     }
     const local = readLocal();
     const list = local.giveaways || [];
@@ -275,7 +280,7 @@ export async function enterGiveaway(id, userInfo) {
     if (item) item.participants = (Number(item.participants) || 0) + 1;
     local.giveaways = list;
     writeLocal(local);
-    return true;
+    return "ok";
 }
 
 export async function listGiveawayEntries(giveawayId) {

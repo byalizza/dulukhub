@@ -312,7 +312,7 @@ export function demoSetSession(session) {
 export async function processPhotoFile(file, onProgress) {
     const thumbBlob = await compressImage(file, 640, 0.72);
     if (onProgress) onProgress(50);
-    const fullBlob = await compressImage(file, 1200, 0.8);
+    const fullBlob = await compressImage(file, 2000, 0.92);
     if (onProgress) onProgress(80);
     const thumbnailUrl = await blobToDataUrl(thumbBlob);
     const imageUrl = await blobToDataUrl(fullBlob);
@@ -379,6 +379,18 @@ function normDate(v) {
     return v;
 }
 
+function cleanPhotoUrl(url) {
+    if (!url) return "";
+    try {
+        const u = new URL(url);
+        if (u.hostname.includes("fbcdn.net")) {
+            ["stp", "cstp", "ctp"].forEach((p) => u.searchParams.delete(p));
+            return u.toString();
+        }
+    } catch (_) {}
+    return url;
+}
+
 function photoToItem(doc) {
     const d = doc.data();
     return {
@@ -388,7 +400,7 @@ function photoToItem(doc) {
         category: d.category || "",
         date: toISO(d.createdAt) || new Date().toISOString(),
         thumbs: d.thumbnailUrl || "",
-        full: d.imageUrl || ""
+        full: cleanPhotoUrl(d.imageUrl) || ""
     };
 }
 

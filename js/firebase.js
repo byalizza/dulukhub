@@ -241,13 +241,16 @@ export function createHeritageItem(data) {
 
 export async function enterGiveaway(id, userInfo) {
     if (await isLive()) {
-        await updateDoc(doc(db, "giveaways", id), { participants: increment(1) });
+        let isNew = true;
         if (userInfo && userInfo.uid) {
             try {
-                const entryId = id + "_" + userInfo.uid;
+                const phoneKey = (userInfo.phone || "").replace(/\D/g, "");
+                const entryId = id + (phoneKey ? "_p" + phoneKey : "_u" + userInfo.uid);
                 const entryRef = doc(db, "giveawayEntries", entryId);
                 const existing = await getDoc(entryRef);
-                if (!existing.exists()) {
+                if (existing.exists()) {
+                    isNew = false;
+                } else {
                     await setDoc(entryRef, {
                         giveawayId: id,
                         uid: userInfo.uid,
@@ -258,9 +261,13 @@ export async function enterGiveaway(id, userInfo) {
                 }
             } catch (err) {
                 console.warn("Katılım kaydı eklenemedi:", err);
+                isNew = false;
             }
         }
-        return true;
+        if (isNew) {
+            await updateDoc(doc(db, "giveaways", id), { participants: increment(1) });
+        }
+        return isNew;
     }
     const local = readLocal();
     const list = local.giveaways || [];

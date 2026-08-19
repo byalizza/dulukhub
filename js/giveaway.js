@@ -151,11 +151,16 @@ async function joinGiveaway(id, btn) {
         const u = getCurrentUser();
         const livePhone = u ? u.phoneNumber || "" : "";
         const autoEmail = u ? (u.email || "").match(/^phone(\d+)@/) : null;
-        await enterGiveaway(g.id, {
+        const ok = await enterGiveaway(g.id, {
             uid: u ? u.uid : "",
             name: u ? (u.displayName || "") : "",
             phone: livePhone || (autoEmail ? autoEmail[1] : "")
         });
+        if (!ok) {
+            btn.disabled = false;
+            toast("Bu numara zaten çekilişe katılmış.", "error");
+            return;
+        }
         g.participants = (Number(g.participants) || 0) + 1;
         markJoined(g.id);
 

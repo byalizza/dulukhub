@@ -39,18 +39,6 @@ function parseLocalDT(val) {
     return new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]).toISOString();
 }
 
-function cleanPhotoUrl(url) {
-    if (!url) return "";
-    try {
-        const u = new URL(url);
-        if (u.hostname.includes("fbcdn.net")) {
-            ["stp", "cstp", "ctp"].forEach((p) => u.searchParams.delete(p));
-            return u.toString();
-        }
-    } catch (_) {}
-    return url;
-}
-
 function fmtDate(iso) {
     if (!iso) return "-";
     const d = new Date(iso);
@@ -469,14 +457,10 @@ async function handleAddSubmit(formId, fd) {
             description: fd.get("description")?.trim() || "",
             imageUrl: fd.get("imageUrl")?.trim() || "", date: now, createdAt: now
         }),
-        addPhoto: () => {
-            const rawUrl = fd.get("imageUrl")?.trim() || "";
-            const cleanUrl = cleanPhotoUrl(rawUrl);
-            return {
-                title: fd.get("title")?.trim(), description: fd.get("description")?.trim() || "",
-                imageUrl: cleanUrl, thumbnailUrl: cleanUrl, date: now, createdAt: now
-            };
-        }
+        addPhoto: () => ({
+            title: fd.get("title")?.trim(), description: fd.get("description")?.trim() || "",
+            imageUrl: fd.get("imageUrl")?.trim(), thumbnailUrl: fd.get("imageUrl")?.trim(), date: now, createdAt: now
+        })
     };
 
     const colMap = { addPost: "posts", addAnnounce: "announcements", addEvent: "events", addGiveaway: "giveaways", addStory: "stories", addHeritage: "heritage", addPhoto: "photos" };

@@ -379,18 +379,6 @@ function normDate(v) {
     return v;
 }
 
-function cleanPhotoUrl(url) {
-    if (!url) return "";
-    try {
-        const u = new URL(url);
-        if (u.hostname.includes("fbcdn.net")) {
-            ["stp", "cstp", "ctp"].forEach((p) => u.searchParams.delete(p));
-            return u.toString();
-        }
-    } catch (_) {}
-    return url;
-}
-
 function photoToItem(doc) {
     const d = doc.data();
     return {
@@ -400,7 +388,7 @@ function photoToItem(doc) {
         category: d.category || "",
         date: toISO(d.createdAt) || new Date().toISOString(),
         thumbs: d.thumbnailUrl || "",
-        full: cleanPhotoUrl(d.imageUrl) || ""
+        full: d.imageUrl || ""
     };
 }
 

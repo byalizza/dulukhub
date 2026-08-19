@@ -373,9 +373,10 @@ export async function renderProfileScreen() {
     const p = currentProfile;
     const livePhone = currentUser.phoneNumber || "";
     const autoEmail = (currentUser.email || "").match(/^phone(\d+)@/);
-    const fallbackName = livePhone || (autoEmail ? autoEmail[1] : "") || currentUser.email || "Kullanıcı";
+    const extractedPhone = autoEmail ? autoEmail[1] : "";
+    const fallbackName = livePhone || extractedPhone || currentUser.email || "Kullanıcı";
     const name = (p.displayName || p.username || fallbackName).trim();
-    const contact = p.phone || livePhone || p.email || (autoEmail ? autoEmail[1] : "") || currentUser.email || "";
+    const contact = p.phone || livePhone || extractedPhone || currentUser.email || "";
 
     const joined = readStoredSet("dulukhub-giveaway-joined");
     const liked = readStoredSet("dulukhub-story-likes");

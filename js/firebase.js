@@ -158,6 +158,14 @@ export async function listGiveaways() {
     return sortByDateAsc(active);
 }
 
+export async function listGiveawaysAll() {
+    if (await isLive()) {
+        const snap = await getDocs(query(collection(db, "giveaways"), orderBy("endDate", "asc"), limit(200)));
+        return snap.docs.map(giveawayToItem);
+    }
+    return sortByDateAsc(getDemoList("giveaways"));
+}
+
 export async function listStories() {
     if (await isLive()) {
         const snap = await getDocs(query(collection(db, "stories"), orderBy("date", "desc"), limit(40)));

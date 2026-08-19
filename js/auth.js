@@ -21,7 +21,8 @@ import {
     saveUserProfile,
     getUserProfile,
     demoGetSession,
-    demoSetSession
+    demoSetSession,
+    listGiveawaysAll
 } from "./firebase.js";
 
 const ADMIN_CODE = "355334";
@@ -425,7 +426,7 @@ async function renderProfileGiveaways(box, joined) {
         return;
     }
     try {
-        const all = await listGiveaways();
+        const all = await listGiveawaysAll();
         const mine = all.filter((g) => joined.has(g.id));
         if (!mine.length) {
             box.innerHTML = '<p class="form-hint" style="margin:0">Katıldığın çekilişler sona erdi. Yeni çekilişleri kaçırma!</p>';

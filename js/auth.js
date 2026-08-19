@@ -370,8 +370,11 @@ export async function renderProfileScreen() {
     }
 
     const p = currentProfile;
-    const name = (p.displayName || p.username || currentUser.email || "Kullanıcı").trim();
-    const contact = p.phone || p.email || currentUser.email || "";
+    const livePhone = currentUser.phoneNumber || "";
+    const autoEmail = (currentUser.email || "").match(/^phone(\d+)@/);
+    const fallbackName = livePhone || (autoEmail ? autoEmail[1] : "") || currentUser.email || "Kullanıcı";
+    const name = (p.displayName || p.username || fallbackName).trim();
+    const contact = p.phone || livePhone || p.email || (autoEmail ? autoEmail[1] : "") || currentUser.email || "";
 
     const joined = readStoredSet("dulukhub-giveaway-joined");
     const liked = readStoredSet("dulukhub-story-likes");
